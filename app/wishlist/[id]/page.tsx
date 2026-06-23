@@ -1,6 +1,32 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect, notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import Link from "next/link";
+import { WishItemList } from "@/components/wishlist/wish-item-list";
+
+const EVENT_EMOJI: Record<string, string> = {
+  birthday: "🎂",
+  mothers_day: "🌸",
+  fathers_day: "👨",
+  valentines: "💝",
+  christmas: "🎄",
+  hanukkah: "🕎",
+  engagement: "💍",
+  bridal_shower: "👰",
+  wedding: "🥂",
+  anniversary: "🎊",
+  baby_shower: "👶",
+  graduation: "🎓",
+  new_job: "💼",
+  retirement: "🌅",
+  housewarming: "🏠",
+  just_because: "🎉",
+};
+
+const VISIBILITY_LABEL: Record<string, string> = {
+  public: "Public",
+  private: "Private",
+  inner_circle: "Inner Circle",
+};
 
 export default async function WishlistDetailPage({ params }: { params: { id: string } }) {
   const supabase = await createClient();
@@ -8,44 +34,108 @@ export default async function WishlistDetailPage({ params }: { params: { id: str
 
   if (!user) redirect("/auth/login");
 
+  // RLS handles access: owner sees all, others only see public wishlists
   const { data: wishlist } = await supabase
     .from("wishlists")
     .select("*")
     .eq("id", params.id)
-    .eq("user_id", user.id)
     .single();
 
-  if (!wishlist) notFound();
+  if (!wishlist) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <p className="text-4xl">🔒</p>
+          <p className="font-medium">This wishlist is private</p>
+          <p className="text-sm text-muted-foreground">You don't have access to this wishlist.</p>
+          <Link
+            href="/dashboard"
+            className="inline-block mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            ← Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const isOwner = wishlist.user_id === user.id;
+
+  const { data: items } = await supabase
+    .from("wish_items")
+    .select("*")
+    .eq("wishlist_id", params.id)
+    .order("created_at", { ascending: false });
+
+  const emoji = EVENT_EMOJI[wishlist.event_type] ?? "🎁";
+  const date = wishlist.event_date
+    ? new Date(wishlist.event_date + "T00:00:00").toLocaleDateString("en-CA", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center">
+          <Link
+            href="/dashboard"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
             ← My Wishlists
           </Link>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-start justify-between mb-6">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">{wishlist.title}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{wishlist.visibility} · {wishlist.event_type}</p>
+            <h1 className="text-2xl font-bold">
+              {emoji} {wishlist.title}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {date && `${date} · `}
+              {VISIBILITY_LABEL[wishlist.visibility]} · {(items ?? []).length} items
+            </p>
           </div>
-          <Link
-            href={`/wishlist/${wishlist.id}/edit`}
-            className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
-          >
-            Edit
-          </Link>
+          {isOwner && (
+            <div className="flex gap-2 flex-shrink-0">
+              <Link
+                href={`/wishlist/${wishlist.id}/edit`}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+              >
+                Edit
+              </Link>
+              <Link
+                href={`/wishlist/${wishlist.id}/item/new`}
+                className="rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                + Add Item
+              </Link>
+            </div>
+          )}
         </div>
 
-        <div className="rounded-xl border border-border p-8 text-center text-muted-foreground">
-          <p className="text-4xl mb-3">📦</p>
-          <p className="font-medium">No items yet</p>
-          <p className="text-sm mt-1">Add Item feature coming soon.</p>
-        </div>
+        {/* Items */}
+        {(items ?? []).length === 0 ? (
+          <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">
+            <p className="text-4xl">📦</p>
+            <p className="font-medium">No items yet</p>
+            {isOwner && (
+              <Link
+                href={`/wishlist/${wishlist.id}/item/new`}
+                className="inline-block mt-1 text-sm font-medium text-foreground underline underline-offset-4 hover:opacity-70 transition-opacity"
+              >
+                Add your first item
+              </Link>
+            )}
+          </div>
+        ) : (
+          <WishItemList items={items ?? []} />
+        )}
       </main>
     </div>
   );
