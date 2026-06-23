@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { LogoutButton } from "@/components/ui/logout-button";
+import { WishlistList } from "@/components/wishlist/wishlist-list";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -28,8 +30,17 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-10">
-        <p className="text-muted-foreground">My wishlists — coming soon</p>
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-xl font-bold">My Wishlists</h1>
+          <Link
+            href="/wishlist/new"
+            className="rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            + Add Wishlist
+          </Link>
+        </div>
+        <WishlistList />
       </main>
     </div>
   );

@@ -1,24 +1,35 @@
-# Fix Later — 미결 항목 목록
+# Fix Later — Backlog
 
 ---
 
-## Next.js 보안 취약점 업그레이드
+## Next.js Security Vulnerability Upgrade
 
-- **상태:** 미착수
-- **이유:** 현재 Next.js 14.2.18에 보안 취약점 있음 (npm install 경고)
-- **내용:** MVP 개발 완료 후 패치 버전으로 업그레이드
-- **참고:** https://nextjs.org/blog/security-update-2025-12-11
+- **Status:** Not started
+- **Reason:** Current Next.js 14.2.18 has a known security vulnerability (flagged by npm install)
+- **Action:** Upgrade to a patched version after MVP development is complete
+- **Ref:** https://nextjs.org/blog/security-update-2025-12-11
 
-순서대로 확인하고 해결되면 지운다.
+Check items in order and remove when resolved.
 
 ---
 
-## 랜딩 페이지 (`/`)
+## Landing Page (`/`)
 
-- **상태:** 미착수
-- **이유:** Feature 2 (위시리스트 관리 + 대시보드) 완성 후 작업 예정
-- **내용:**
-  - 서비스 소개 페이지 (비로그인 방문자용)
-  - 로그인 후에도 `/`로 돌아올 수 있어야 함 (대시보드와 별개)
-  - Google 로그인 버튼 포함
-- **선행 조건:** Feature 2 대시보드 완료
+- **Status:** Not started
+- **Reason:** Planned after Feature 2 (wishlist management + dashboard) is complete
+- **Action:**
+  - Service introduction page for non-authenticated visitors
+  - Should be accessible after login as well (separate from dashboard)
+  - Include Google login button
+- **Prerequisite:** Feature 2 dashboard complete
+
+---
+
+## Extract event_type Data into a Single File
+
+- **Status:** Not started
+- **Reason:** `EVENT_TYPES` (form) and `EVENT_EMOJI` (card display) are currently duplicated across two files
+  - `components/wishlist/wishlist-form.tsx`
+  - `components/wishlist/wishlist-card.tsx`
+- **Action:** Extract into a single source file (e.g. `lib/constants/event-types.ts`)
+- **Prerequisite:** None — handle during a future refactor pass

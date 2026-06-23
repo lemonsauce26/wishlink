@@ -21,13 +21,13 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
-          id?: string;
           email?: string;
           display_name?: string | null;
           avatar_url?: string | null;
           provider?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       wishlists: {
         Row: {
@@ -62,6 +62,7 @@ export type Database = {
           claim_visibility?: "surprise" | "show" | "verified";
           updated_at?: string;
         };
+        Relationships: [];
       };
       wish_items: {
         Row: {
@@ -112,6 +113,7 @@ export type Database = {
           receiving_detail?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       wishlist_invites: {
         Row: {
@@ -137,6 +139,7 @@ export type Database = {
           accepted_user_id?: string | null;
           accepted_at?: string | null;
         };
+        Relationships: [];
       };
       claims: {
         Row: {
@@ -162,7 +165,11 @@ export type Database = {
         Update: {
           cancelled_at?: string | null;
         };
+        Relationships: [];
       };
     };
+    Views: Record<never, never>;
+    Functions: Record<never, never>;
+    Enums: Record<never, never>;
   };
 };
