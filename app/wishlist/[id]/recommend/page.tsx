@@ -1,15 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { WishItemForm } from "@/components/wishlist/wish-item-form";
+import { AiRecommendClient } from "@/components/wishlist/ai-recommend-client";
 
-export default async function NewItemPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: { title?: string };
-}) {
+export default async function RecommendPage({ params }: { params: { id: string } }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -27,7 +21,7 @@ export default async function NewItemPage({
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center">
+        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center">
           <Link
             href={`/wishlist/${params.id}`}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -37,13 +31,15 @@ export default async function NewItemPage({
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Add Item</h1>
-        <WishItemForm
-          mode="create"
-          wishlistId={params.id}
-          defaultValues={searchParams.title ? { title: searchParams.title } : undefined}
-        />
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">✨ AI Gift Ideas</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Personalized suggestions based on your wishlist
+          </p>
+        </div>
+
+        <AiRecommendClient wishlistId={params.id} wishlistTitle={wishlist.title} />
       </main>
     </div>
   );

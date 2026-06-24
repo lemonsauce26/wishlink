@@ -110,6 +110,12 @@ export default async function WishlistDetailPage({ params }: { params: { id: str
                 Edit
               </Link>
               <Link
+                href={`/wishlist/${wishlist.id}/recommend`}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+              >
+                ✨ AI Ideas
+              </Link>
+              <Link
                 href={`/wishlist/${wishlist.id}/item/new`}
                 className="rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
               >

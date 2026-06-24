@@ -55,7 +55,7 @@ export function WishItemForm({ mode, wishlistId, itemId, defaultValues }: Props)
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [step, setStep] = useState<1 | 2>(mode === "edit" ? 2 : 1);
+  const [step, setStep] = useState<1 | 2>(mode === "edit" || !!defaultValues?.title ? 2 : 1);
   const [urlInput, setUrlInput] = useState("");
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
