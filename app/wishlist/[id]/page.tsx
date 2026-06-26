@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { WishItemList } from "@/components/wishlist/wish-item-list";
+import { ShareButton } from "@/components/wishlist/share-button";
 
 const EVENT_EMOJI: Record<string, string> = {
   birthday: "🎂",
@@ -109,6 +110,11 @@ export default async function WishlistDetailPage({ params }: { params: { id: str
               >
                 Edit
               </Link>
+              <ShareButton
+                wishlistId={wishlist.id}
+                shareToken={wishlist.share_token}
+                visibility={wishlist.visibility}
+              />
               <Link
                 href={`/wishlist/${wishlist.id}/recommend`}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
