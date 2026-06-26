@@ -16,7 +16,7 @@ type Props = {
   initialCancelled: Invite[];
 };
 
-type InviteFormStatus = "idle" | "loading" | "duplicate" | "error";
+type InviteFormStatus = "idle" | "loading" | "duplicate" | "error" | "email_failed";
 
 export function InnerCircleClient({ wishlistId, initialPending, initialAccepted, initialCancelled }: Props) {
   const [pending, setPending] = useState(initialPending);
@@ -25,6 +25,7 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
   const [email, setEmail] = useState("");
   const [formStatus, setFormStatus] = useState<InviteFormStatus>("idle");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const [confirmRevokeTarget, setConfirmRevokeTarget] = useState<Invite | null>(null);
   const [confirmReinviteTarget, setConfirmReinviteTarget] = useState<{ id: string; email: string } | null>(null);
 
@@ -79,6 +80,17 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
         ...prev,
       ]);
       setEmail("");
+    }
+  }
+
+  async function handleResend(invite: Invite) {
+    setResendingId(invite.id);
+    const res = await fetch(`/api/inner-circle/invite/${invite.id}/resend`, {
+      method: "POST",
+    });
+    setResendingId(null);
+    if (!res.ok) {
+      setFormStatus("email_failed");
     }
   }
 
@@ -142,6 +154,9 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
           {formStatus === "error" && (
             <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
           )}
+          {formStatus === "email_failed" && (
+            <p className="text-sm text-destructive">Failed to send email. Please try again.</p>
+          )}
         </section>
 
         {/* Accepted */}
@@ -183,11 +198,11 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
                   <span className="text-sm">{invite.invitee_email}</span>
                   <div className="flex gap-3">
                     <button
-                      disabled
-                      className="text-sm text-muted-foreground opacity-40 cursor-not-allowed"
-                      title="Email sending coming soon"
+                      onClick={() => handleResend(invite)}
+                      disabled={resendingId === invite.id}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
                     >
-                      Resend
+                      {resendingId === invite.id ? "…" : "Resend"}
                     </button>
                     <button
                       onClick={() => handleRevokeClick(invite)}

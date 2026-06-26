@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendInviteEmail } from "@/lib/email";
 
-export async function PATCH(
+export async function POST(
   _req: NextRequest,
   { params }: { params: { inviteId: string } }
 ) {
@@ -17,7 +17,7 @@ export async function PATCH(
     .single();
 
   if (!invite) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (invite.status !== "cancelled") return NextResponse.json({ error: "Not cancelled" }, { status: 400 });
+  if (invite.status !== "pending") return NextResponse.json({ error: "Not pending" }, { status: 400 });
 
   const { data: wishlist } = await supabase
     .from("wishlists")
@@ -34,18 +34,6 @@ export async function PATCH(
     .eq("id", user.id)
     .single();
 
-  const { error: updateError } = await supabase
-    .from("wishlist_invites")
-    .update({
-      status: "pending" as const,
-      invited_at: new Date().toISOString(),
-      accepted_at: null,
-      accepted_user_id: null,
-    })
-    .eq("id", params.inviteId);
-
-  if (updateError) return NextResponse.json({ error: "Failed" }, { status: 500 });
-
   try {
     await sendInviteEmail({
       to: invite.invitee_email,
@@ -54,10 +42,6 @@ export async function PATCH(
       shareToken: wishlist.share_token,
     });
   } catch {
-    await supabase
-      .from("wishlist_invites")
-      .update({ status: "cancelled" as const })
-      .eq("id", params.inviteId);
     return NextResponse.json({ error: "email_failed" }, { status: 500 });
   }
 

@@ -35,18 +35,6 @@ Check items in order and remove when resolved.
 
 ---
 
-## Invite Re-invite Policy Decisions Needed
-
-- **Status:** Not started
-- **Reason:** No policy defined for re-inviting a user whose invite was previously cancelled. Currently, a new record is inserted whenever a cancelled record exists (via `neq('status', 'cancelled')` check), which can result in duplicate rows for the same email.
-- **Cases to decide:**
-  1. Re-inviting a revoked user (accepted → cancelled): reuse existing record (update status back to pending) vs. insert a new record (preserve history)
-  2. Re-inviting a cancelled pending user (pending → cancelled): same question — reuse vs. new record
-- **Action:** Decide on policy for each case, then update `POST /api/inner-circle/invite` accordingly
-- **Prerequisite:** Decide before email sending is implemented
-
----
-
 ## Extract event_type Data into a Single File
 
 - **Status:** Not started
