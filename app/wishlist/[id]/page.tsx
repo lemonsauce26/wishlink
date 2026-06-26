@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { WishItemList } from "@/components/wishlist/wish-item-list";
 import { ShareButton } from "@/components/wishlist/share-button";
+import { AppHeader } from "@/components/layout/app-header";
 
 const EVENT_EMOJI: Record<string, string> = {
   birthday: "🎂",
@@ -79,16 +80,7 @@ export default async function WishlistDetailPage({ params }: { params: { id: str
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center">
-          <Link
-            href="/dashboard"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← My Wishlists
-          </Link>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}

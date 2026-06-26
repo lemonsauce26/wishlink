@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { LogoutButton } from "@/components/ui/logout-button";
 import { WishlistList } from "@/components/wishlist/wishlist-list";
+import { AppHeader } from "@/components/layout/app-header";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -10,25 +10,9 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/auth/login");
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("display_name, avatar_url")
-    .eq("id", user.id)
-    .single();
-
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <span className="font-semibold text-lg">🎁 WishLink</span>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              {profile?.display_name ?? user.email}
-            </span>
-            <LogoutButton />
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">

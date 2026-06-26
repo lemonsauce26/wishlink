@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
 import { WishlistForm } from "@/components/wishlist/wishlist-form";
+import { AppHeader } from "@/components/layout/app-header";
 
 export default async function EditWishlistPage({ params }: { params: { id: string } }) {
   const supabase = await createClient();
@@ -20,13 +20,7 @@ export default async function EditWishlistPage({ params }: { params: { id: strin
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← My Wishlists
-          </Link>
-        </div>
-      </header>
+      <AppHeader />
 
       <div className="max-w-lg mx-auto px-4 py-10">
         <div className="mb-6">

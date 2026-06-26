@@ -4,6 +4,7 @@ import { checkWishlistAccess } from "@/lib/wishlist-access";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ShareItemList } from "@/components/wishlist/share-item-list";
+import { AppHeader } from "@/components/layout/app-header";
 
 const EVENT_EMOJI: Record<string, string> = {
   birthday: "🎂",
@@ -41,6 +42,7 @@ export default async function SharePage({ params }: { params: { share_token: str
     if (result.reason === "forbidden") {
       return (
         <div className="min-h-screen bg-background">
+          <AppHeader />
           <main className="max-w-4xl mx-auto px-4 py-24 text-center space-y-3">
             <p className="text-4xl">🔍</p>
             <p className="font-medium">This page is not available</p>
@@ -74,7 +76,7 @@ export default async function SharePage({ params }: { params: { share_token: str
 
   return (
     <div className="min-h-screen bg-background">
-
+      <AppHeader />
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">

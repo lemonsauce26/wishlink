@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
 import { WishItemForm } from "@/components/wishlist/wish-item-form";
+import { AppHeader } from "@/components/layout/app-header";
 
 export default async function NewItemPage({
   params,
@@ -26,16 +26,7 @@ export default async function NewItemPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center">
-          <Link
-            href={`/wishlist/${params.id}`}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← {wishlist.title}
-          </Link>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Add Item</h1>
