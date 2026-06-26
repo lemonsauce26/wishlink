@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { checkWishlistAccess } from "@/lib/wishlist-access";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ShareItemList } from "@/components/wishlist/share-item-list";
@@ -24,56 +26,37 @@ const EVENT_EMOJI: Record<string, string> = {
 
 export default async function SharePage({ params }: { params: { share_token: string } }) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: wishlist } = await supabase
-    .from("wishlists")
-    .select("*")
-    .eq("share_token", params.share_token)
-    .single();
+  const result = await checkWishlistAccess({
+    shareToken: params.share_token,
+    userId: user?.id ?? null,
+    userEmail: user?.email ?? null,
+  });
 
-  if (!wishlist) notFound();
-
-  if (wishlist.visibility === "private") {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <p className="text-4xl">🔒</p>
-          <p className="font-medium">비공개 위시리스트입니다</p>
-          <p className="text-sm text-muted-foreground">이 위시리스트는 공개되어 있지 않아요.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (wishlist.visibility === "inner_circle") {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) redirect(`/auth/login?next=/share/${params.share_token}`);
-
-    const isOwner = wishlist.user_id === user.id;
-    if (!isOwner) {
-      const { data: invite } = await supabase
-        .from("wishlist_invites")
-        .select("id")
-        .eq("wishlist_id", wishlist.id)
-        .eq("invitee_email", user.email ?? "")
-        .neq("status", "cancelled")
-        .single();
-
-      if (!invite) {
-        return (
-          <div className="min-h-screen bg-background flex items-center justify-center">
-            <div className="text-center space-y-3">
-              <p className="text-4xl">✨</p>
-              <p className="font-medium">초대받은 분만 볼 수 있어요</p>
-              <p className="text-sm text-muted-foreground">위시리스트 주인에게 초대를 요청해봐요.</p>
-            </div>
-          </div>
-        );
-      }
+  if (!result.allowed) {
+    if (result.reason === "redirect_login") {
+      redirect(`/auth/login?next=/share/${params.share_token}`);
     }
+    if (result.reason === "forbidden") {
+      return (
+        <div className="min-h-screen bg-background">
+          <main className="max-w-4xl mx-auto px-4 py-24 text-center space-y-3">
+            <p className="text-4xl">🔍</p>
+            <p className="font-medium">This page is not available</p>
+            <p className="text-sm text-muted-foreground">
+              This page is currently not available.
+            </p>
+          </main>
+        </div>
+      );
+    }
+    notFound();
   }
 
-  const { data: items } = await supabase
+  const wishlist = result.wishlist;
+
+  const { data: items } = await supabaseAdmin
     .from("wish_items")
     .select("*")
     .eq("wishlist_id", wishlist.id);
@@ -91,11 +74,6 @@ export default async function SharePage({ params }: { params: { share_token: str
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center">
-          <span className="text-sm font-medium">WishLink</span>
-        </div>
-      </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         <div>
@@ -111,7 +89,7 @@ export default async function SharePage({ params }: { params: { share_token: str
         {allItems.length === 0 ? (
           <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">
             <p className="text-4xl">📦</p>
-            <p className="font-medium">아직 아이템이 없어요</p>
+            <p className="font-medium">No items yet</p>
           </div>
         ) : (
           <ShareItemList items={allItems} />

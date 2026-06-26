@@ -1,0 +1,43 @@
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { Database } from "@/types/database";
+
+type WishlistRow = Database["public"]["Tables"]["wishlists"]["Row"];
+
+export type WishlistAccessResult =
+  | { allowed: true; wishlist: WishlistRow }
+  | { allowed: false; reason: "not_found" | "redirect_login" | "forbidden" };
+
+export async function checkWishlistAccess({
+  shareToken,
+  userId,
+  userEmail,
+}: {
+  shareToken: string;
+  userId: string | null;
+  userEmail: string | null;
+}): Promise<WishlistAccessResult> {
+  const { data: wishlist } = await supabaseAdmin
+    .from("wishlists")
+    .select("*")
+    .eq("share_token", shareToken)
+    .single();
+
+  if (!wishlist) return { allowed: false, reason: "not_found" };
+  if (wishlist.visibility === "private") return { allowed: false, reason: "not_found" };
+  if (wishlist.visibility === "public") return { allowed: true, wishlist };
+
+  // inner_circle
+  if (!userId) return { allowed: false, reason: "redirect_login" };
+  if (wishlist.user_id === userId) return { allowed: true, wishlist };
+
+  const { data: invite } = await supabaseAdmin
+    .from("wishlist_invites")
+    .select("id")
+    .eq("wishlist_id", wishlist.id)
+    .eq("invitee_email", userEmail ?? "")
+    .neq("status", "cancelled")
+    .single();
+
+  if (!invite) return { allowed: false, reason: "forbidden" };
+  return { allowed: true, wishlist };
+}
