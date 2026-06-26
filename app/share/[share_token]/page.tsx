@@ -56,6 +56,7 @@ export default async function SharePage({ params }: { params: { share_token: str
         .select("id")
         .eq("wishlist_id", wishlist.id)
         .eq("invitee_email", user.email ?? "")
+        .neq("status", "cancelled")
         .single();
 
       if (!invite) {

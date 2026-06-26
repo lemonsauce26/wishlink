@@ -25,17 +25,25 @@ export async function POST(req: NextRequest) {
 
   const { data: existing } = await supabase
     .from("wishlist_invites")
-    .select("id")
+    .select("id, status")
     .eq("wishlist_id", wishlistId)
     .eq("invitee_email", normalizedEmail)
     .single();
-  if (existing) return NextResponse.json({ error: "already_invited" }, { status: 409 });
 
-  const { error } = await supabase
+  if (existing) {
+    if (existing.status === "cancelled") {
+      return NextResponse.json({ error: "previously_cancelled", id: existing.id }, { status: 409 });
+    }
+    return NextResponse.json({ error: "already_invited" }, { status: 409 });
+  }
+
+  const { data: inserted, error } = await supabase
     .from("wishlist_invites")
-    .insert({ wishlist_id: wishlistId, invitee_email: normalizedEmail });
+    .insert({ wishlist_id: wishlistId, invitee_email: normalizedEmail })
+    .select("id")
+    .single();
 
-  if (error) return NextResponse.json({ error: "Failed" }, { status: 500 });
+  if (error || !inserted) return NextResponse.json({ error: "Failed" }, { status: 500 });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, id: inserted.id });
 }

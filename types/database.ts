@@ -120,7 +120,7 @@ export type Database = {
           id: string;
           wishlist_id: string;
           invitee_email: string;
-          status: "pending" | "accepted";
+          status: "pending" | "accepted" | "cancelled";
           accepted_user_id: string | null;
           invited_at: string;
           accepted_at: string | null;
@@ -129,14 +129,15 @@ export type Database = {
           id?: string;
           wishlist_id: string;
           invitee_email: string;
-          status?: "pending" | "accepted";
+          status?: "pending" | "accepted" | "cancelled";
           accepted_user_id?: string | null;
           invited_at?: string;
           accepted_at?: string | null;
         };
         Update: {
-          status?: "pending" | "accepted";
+          status?: "pending" | "accepted" | "cancelled";
           accepted_user_id?: string | null;
+          invited_at?: string;
           accepted_at?: string | null;
         };
         Relationships: [];

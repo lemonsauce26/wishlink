@@ -115,6 +115,14 @@ export default async function WishlistDetailPage({ params }: { params: { id: str
                 shareToken={wishlist.share_token}
                 visibility={wishlist.visibility}
               />
+              {wishlist.visibility === "inner_circle" && (
+                <Link
+                  href={`/wishlist/${wishlist.id}/inner-circle`}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+                >
+                  Manage Inner Circle
+                </Link>
+              )}
               <Link
                 href={`/wishlist/${wishlist.id}/recommend`}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
