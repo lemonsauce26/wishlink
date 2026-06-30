@@ -142,14 +142,16 @@ export type Database = {
         };
         Relationships: [];
       };
-      claims: {
+      wishitem_claims: {
         Row: {
           id: string;
           wish_item_id: string;
           claimer_name: string;
-          claimer_email: string;
+          claimer_email: string | null;
+          claimer_note: string | null;
           user_id: string | null;
-          cancel_token: string;
+          claimed_by_owner: boolean;
+          cancel_token: string | null;
           claimed_at: string;
           cancelled_at: string | null;
         };
@@ -157,9 +159,11 @@ export type Database = {
           id?: string;
           wish_item_id: string;
           claimer_name: string;
-          claimer_email: string;
+          claimer_email?: string | null;
+          claimer_note?: string | null;
           user_id?: string | null;
-          cancel_token?: string;
+          claimed_by_owner?: boolean;
+          cancel_token?: string | null;
           claimed_at?: string;
           cancelled_at?: string | null;
         };

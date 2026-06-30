@@ -4,6 +4,7 @@ import Link from "next/link";
 import { WishItemList } from "@/components/wishlist/wish-item-list";
 import { ShareButton } from "@/components/wishlist/share-button";
 import { AppHeader } from "@/components/layout/app-header";
+import { getClaimCountMap } from "@/lib/claims";
 
 const EVENT_EMOJI: Record<string, string> = {
   birthday: "🎂",
@@ -68,6 +69,10 @@ export default async function WishlistDetailPage({ params }: { params: { id: str
     .select("*")
     .eq("wishlist_id", params.id)
     .order("created_at", { ascending: false });
+
+  const claimCountMap = isOwner
+    ? await getClaimCountMap((items ?? []).map((i) => i.id))
+    : {};
 
   const emoji = EVENT_EMOJI[wishlist.event_type] ?? "🎁";
   const date = wishlist.event_date
@@ -146,7 +151,7 @@ export default async function WishlistDetailPage({ params }: { params: { id: str
             )}
           </div>
         ) : (
-          <WishItemList items={items ?? []} />
+          <WishItemList items={items ?? []} isOwner={isOwner} claimCountMap={claimCountMap} />
         )}
       </main>
     </div>

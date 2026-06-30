@@ -12,6 +12,7 @@ type WishItem = {
   currency: string;
   store_name: string | null;
   priority: "high" | "medium" | "low";
+  quantity: number;
   created_at: string;
 };
 
@@ -34,7 +35,13 @@ function sortItems(items: WishItem[], sort: SortOption): WishItem[] {
   });
 }
 
-export function WishItemList({ items }: { items: WishItem[] }) {
+type Props = {
+  items: WishItem[];
+  isOwner?: boolean;
+  claimCountMap?: Record<string, number>;
+};
+
+export function WishItemList({ items, isOwner = false, claimCountMap = {} }: Props) {
   const [sort, setSort] = useState<SortOption>("priority");
   const sorted = sortItems(items, sort);
 
@@ -53,7 +60,12 @@ export function WishItemList({ items }: { items: WishItem[] }) {
         </select>
       </div>
       {sorted.map((item) => (
-        <WishItemCard key={item.id} item={item} />
+        <WishItemCard
+          key={item.id}
+          item={item}
+          isOwner={isOwner}
+          claimCount={claimCountMap[item.id] ?? 0}
+        />
       ))}
     </div>
   );

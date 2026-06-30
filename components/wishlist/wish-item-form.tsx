@@ -185,6 +185,22 @@ export function WishItemForm({ mode, wishlistId, itemId, defaultValues }: Props)
         .eq("id", itemId!);
 
       if (err) { setError(err.message); setLoading(false); return; }
+
+      const hasNonQuantityChanges =
+        payload.title !== defaultValues?.title ||
+        String(payload.price ?? "") !== String(defaultValues?.price ?? "") ||
+        (payload.image_url ?? "") !== (defaultValues?.image_url ?? "") ||
+        (payload.product_url ?? "") !== (defaultValues?.product_url ?? "") ||
+        (payload.store_name ?? "") !== (defaultValues?.store_name ?? "") ||
+        (payload.note ?? "") !== (defaultValues?.note ?? "");
+
+      if (hasNonQuantityChanges) {
+        fetch("/api/claims/notify-item-update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ itemId }),
+        });
+      }
     }
 
     router.push(`/wishlist/${wishlistId}`);
