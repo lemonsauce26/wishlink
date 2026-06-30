@@ -34,7 +34,7 @@ export default async function EditWishlistPage({ params }: { params: { id: strin
             event_type: wishlist.event_type,
             event_date: wishlist.event_date ?? "",
             visibility: wishlist.visibility,
-            claim_visibility: wishlist.claim_visibility,
+            reservation_visibility: wishlist.reservation_visibility,
           }}
         />
       </div>

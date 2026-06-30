@@ -84,7 +84,7 @@ export function ShareItemList({ items }: { items: WishItem[] }) {
             className="flex-shrink-0 rounded-lg border border-border px-3 py-1.5 text-sm font-medium opacity-60 cursor-not-allowed"
             title="Coming soon"
           >
-            🎁 살게요!
+            🎁 I&apos;ll Get This!
           </button>
         </div>
       ))}

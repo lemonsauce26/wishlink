@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { getClaimCount } from "@/lib/claims";
+import { getReservationCount } from "@/lib/reservations";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -29,24 +29,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const claimCount = await getClaimCount(wishItemId);
-  if (claimCount >= item.quantity) {
+  const reservationCount = await getReservationCount(wishItemId);
+  if (reservationCount >= item.quantity) {
     return NextResponse.json({ error: "No slots available" }, { status: 400 });
   }
 
-  const { data: claim, error } = await supabaseAdmin
-    .from("wishitem_claims")
+  const { data: reservation, error } = await supabaseAdmin
+    .from("wishitem_reservations")
     .insert({
       wish_item_id: wishItemId,
-      claimer_name: name.trim(),
-      claimer_email: email?.trim() || null,
-      claimer_note: note?.trim() || null,
+      reserver_name: name.trim(),
+      reserver_email: email?.trim() || null,
+      reserver_note: note?.trim() || null,
       user_id: user.id,
-      claimed_by_owner: true,
+      reserved_by_owner: true,
     })
     .select("id")
     .single();
 
-  if (error || !claim) return NextResponse.json({ error: "Failed" }, { status: 500 });
-  return NextResponse.json({ success: true, id: claim.id });
+  if (error || !reservation) return NextResponse.json({ error: "Failed" }, { status: 500 });
+  return NextResponse.json({ success: true, id: reservation.id });
 }

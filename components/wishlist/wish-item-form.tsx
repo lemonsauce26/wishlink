@@ -195,7 +195,7 @@ export function WishItemForm({ mode, wishlistId, itemId, defaultValues }: Props)
         (payload.note ?? "") !== (defaultValues?.note ?? "");
 
       if (hasNonQuantityChanges) {
-        fetch("/api/claims/notify-item-update", {
+        fetch("/api/reservations/notify-item-update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ itemId }),

@@ -4,24 +4,24 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function PATCH(
   _req: NextRequest,
-  { params }: { params: { claimId: string } }
+  { params }: { params: { reservationId: string } }
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: claim } = await supabaseAdmin
-    .from("wishitem_claims")
+  const { data: reservation } = await supabaseAdmin
+    .from("wishitem_reservations")
     .select("id, wish_item_id")
-    .eq("id", params.claimId)
+    .eq("id", params.reservationId)
     .is("cancelled_at", null)
     .single();
-  if (!claim) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!reservation) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const { data: item } = await supabaseAdmin
     .from("wish_items")
     .select("wishlist_id")
-    .eq("id", claim.wish_item_id)
+    .eq("id", reservation.wish_item_id)
     .single();
 
   const { data: wishlist } = await supabaseAdmin
@@ -35,9 +35,9 @@ export async function PATCH(
   }
 
   await supabaseAdmin
-    .from("wishitem_claims")
+    .from("wishitem_reservations")
     .update({ cancelled_at: new Date().toISOString() })
-    .eq("id", params.claimId);
+    .eq("id", params.reservationId);
 
   return NextResponse.json({ success: true });
 }

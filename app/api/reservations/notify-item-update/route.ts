@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { getActiveClaims } from "@/lib/claims";
+import { getActiveReservations } from "@/lib/reservations";
 import { sendItemUpdateEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
@@ -34,15 +34,15 @@ export async function POST(req: NextRequest) {
     .eq("id", user.id)
     .single();
 
-  const claims = await getActiveClaims(itemId);
+  const reservations = await getActiveReservations(itemId);
   const ownerName = owner?.display_name ?? owner?.email ?? "Someone";
 
   await Promise.allSettled(
-    claims
-      .filter((c) => c.claimer_email)
-      .map((c) =>
+    reservations
+      .filter((r) => r.reserver_email)
+      .map((r) =>
         sendItemUpdateEmail({
-          to: c.claimer_email!,
+          to: r.reserver_email!,
           ownerName,
           itemTitle: item.title,
         })

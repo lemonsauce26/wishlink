@@ -38,7 +38,7 @@ export type Database = {
           event_date: string | null;
           visibility: "public" | "private" | "inner_circle";
           share_token: string;
-          claim_visibility: "surprise" | "show" | "verified";
+          reservation_visibility: "surprise" | "show" | "verified";
           created_at: string;
           updated_at: string;
         };
@@ -50,7 +50,7 @@ export type Database = {
           event_date?: string | null;
           visibility?: "public" | "private" | "inner_circle";
           share_token?: string;
-          claim_visibility?: "surprise" | "show" | "verified";
+          reservation_visibility?: "surprise" | "show" | "verified";
           created_at?: string;
           updated_at?: string;
         };
@@ -59,7 +59,7 @@ export type Database = {
           event_type?: string;
           event_date?: string | null;
           visibility?: "public" | "private" | "inner_circle";
-          claim_visibility?: "surprise" | "show" | "verified";
+          reservation_visibility?: "surprise" | "show" | "verified";
           updated_at?: string;
         };
         Relationships: [];
@@ -142,29 +142,29 @@ export type Database = {
         };
         Relationships: [];
       };
-      wishitem_claims: {
+      wishitem_reservations: {
         Row: {
           id: string;
           wish_item_id: string;
-          claimer_name: string;
-          claimer_email: string | null;
-          claimer_note: string | null;
+          reserver_name: string;
+          reserver_email: string | null;
+          reserver_note: string | null;
           user_id: string | null;
-          claimed_by_owner: boolean;
+          reserved_by_owner: boolean;
           cancel_token: string | null;
-          claimed_at: string;
+          reserved_at: string;
           cancelled_at: string | null;
         };
         Insert: {
           id?: string;
           wish_item_id: string;
-          claimer_name: string;
-          claimer_email?: string | null;
-          claimer_note?: string | null;
+          reserver_name: string;
+          reserver_email?: string | null;
+          reserver_note?: string | null;
           user_id?: string | null;
-          claimed_by_owner?: boolean;
+          reserved_by_owner?: boolean;
           cancel_token?: string | null;
-          claimed_at?: string;
+          reserved_at?: string;
           cancelled_at?: string | null;
         };
         Update: {

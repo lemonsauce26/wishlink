@@ -38,10 +38,10 @@ function sortItems(items: WishItem[], sort: SortOption): WishItem[] {
 type Props = {
   items: WishItem[];
   isOwner?: boolean;
-  claimCountMap?: Record<string, number>;
+  reservationCountMap?: Record<string, number>;
 };
 
-export function WishItemList({ items, isOwner = false, claimCountMap = {} }: Props) {
+export function WishItemList({ items, isOwner = false, reservationCountMap = {} }: Props) {
   const [sort, setSort] = useState<SortOption>("priority");
   const sorted = sortItems(items, sort);
 
@@ -64,7 +64,7 @@ export function WishItemList({ items, isOwner = false, claimCountMap = {} }: Pro
           key={item.id}
           item={item}
           isOwner={isOwner}
-          claimCount={claimCountMap[item.id] ?? 0}
+          reservationCount={reservationCountMap[item.id] ?? 0}
         />
       ))}
     </div>

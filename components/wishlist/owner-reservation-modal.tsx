@@ -8,7 +8,7 @@ type Props = {
   onSuccess: () => void;
 };
 
-export function OwnerClaimModal({ wishItemId, onClose, onSuccess }: Props) {
+export function OwnerReservationModal({ wishItemId, onClose, onSuccess }: Props) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
@@ -21,7 +21,7 @@ export function OwnerClaimModal({ wishItemId, onClose, onSuccess }: Props) {
     setLoading(true);
     setError(null);
 
-    const res = await fetch("/api/claims/owner", {
+    const res = await fetch("/api/reservations/owner", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ wishItemId, name, email, note }),
@@ -32,7 +32,7 @@ export function OwnerClaimModal({ wishItemId, onClose, onSuccess }: Props) {
       onSuccess();
       onClose();
     } else if (data.error === "No slots available") {
-      setError("All slots are already claimed.");
+      setError("All slots are already reserved.");
     } else {
       setError("Something went wrong. Please try again.");
     }
@@ -43,9 +43,9 @@ export function OwnerClaimModal({ wishItemId, onClose, onSuccess }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative z-10 bg-background rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-4">
-        <h3 className="font-semibold">Add Claim on Behalf</h3>
+        <h3 className="font-semibold">Add Reservation on Behalf</h3>
         <p className="text-sm text-muted-foreground">
-          Register someone who said they'd like to get this item.
+          Register someone who said they&apos;d like to get this item.
         </p>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1.5">

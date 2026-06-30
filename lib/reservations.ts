@@ -1,31 +1,31 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Database } from "@/types/database";
 
-export type ClaimRow = Database["public"]["Tables"]["wishitem_claims"]["Row"];
+export type ReservationRow = Database["public"]["Tables"]["wishitem_reservations"]["Row"];
 
-export async function getClaimCount(wishItemId: string): Promise<number> {
+export async function getReservationCount(wishItemId: string): Promise<number> {
   const { count } = await supabaseAdmin
-    .from("wishitem_claims")
+    .from("wishitem_reservations")
     .select("id", { count: "exact", head: true })
     .eq("wish_item_id", wishItemId)
     .is("cancelled_at", null);
   return count ?? 0;
 }
 
-export async function getActiveClaims(wishItemId: string): Promise<ClaimRow[]> {
+export async function getActiveReservations(wishItemId: string): Promise<ReservationRow[]> {
   const { data } = await supabaseAdmin
-    .from("wishitem_claims")
+    .from("wishitem_reservations")
     .select("*")
     .eq("wish_item_id", wishItemId)
     .is("cancelled_at", null)
-    .order("claimed_at", { ascending: true });
+    .order("reserved_at", { ascending: true });
   return data ?? [];
 }
 
-export async function getClaimCountMap(wishItemIds: string[]): Promise<Record<string, number>> {
+export async function getReservationCountMap(wishItemIds: string[]): Promise<Record<string, number>> {
   if (wishItemIds.length === 0) return {};
   const { data } = await supabaseAdmin
-    .from("wishitem_claims")
+    .from("wishitem_reservations")
     .select("wish_item_id")
     .in("wish_item_id", wishItemIds)
     .is("cancelled_at", null);

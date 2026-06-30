@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { OwnerClaimModal } from "./owner-claim-modal";
-import { ClaimListModal } from "./claim-list-modal";
+import { OwnerReservationModal } from "./owner-reservation-modal";
+import { ReservationListModal } from "./reservation-list-modal";
 
 const PRIORITY_CONFIG = {
   high: { dot: "bg-yellow-400", label: "High" },
@@ -26,16 +26,16 @@ type WishItem = {
 type Props = {
   item: WishItem;
   isOwner?: boolean;
-  claimCount?: number;
+  reservationCount?: number;
 };
 
-export function WishItemCard({ item, isOwner = false, claimCount: initialClaimCount = 0 }: Props) {
+export function WishItemCard({ item, isOwner = false, reservationCount: initialClaimCount = 0 }: Props) {
   const priority = PRIORITY_CONFIG[item.priority];
-  const [claimCount, setClaimCount] = useState(initialClaimCount);
-  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [reservationCount, setReservationCount] = useState(initialClaimCount);
+  const [showReservationModal, setShowReservationModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
 
-  const availableSlots = item.quantity - claimCount;
+  const availableSlots = item.quantity - reservationCount;
 
   return (
     <div className="rounded-xl border border-border overflow-hidden">
@@ -73,9 +73,9 @@ export function WishItemCard({ item, isOwner = false, claimCount: initialClaimCo
 
       {isOwner && (
         <div className="flex items-center gap-3 px-4 py-2 border-t border-border bg-secondary/30">
-          {claimCount > 0 ? (
+          {reservationCount > 0 ? (
             <span className="text-xs text-muted-foreground">
-              ✅ {claimCount}/{item.quantity} claimed
+              ✅ {reservationCount}/{item.quantity} reserved
             </span>
           ) : (
             <span className="text-xs text-muted-foreground">
@@ -83,37 +83,37 @@ export function WishItemCard({ item, isOwner = false, claimCount: initialClaimCo
             </span>
           )}
           <div className="flex gap-2 ml-auto">
-            {claimCount > 0 && (
+            {reservationCount > 0 && (
               <button
                 onClick={() => setShowListModal(true)}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                View claimers
+                View reservations
               </button>
             )}
             <button
-              onClick={() => setShowClaimModal(true)}
+              onClick={() => setShowReservationModal(true)}
               disabled={availableSlots <= 0}
               className="text-xs font-medium hover:opacity-70 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              + Add claim
+              + Reserve
             </button>
           </div>
         </div>
       )}
 
-      {showClaimModal && (
-        <OwnerClaimModal
+      {showReservationModal && (
+        <OwnerReservationModal
           wishItemId={item.id}
-          onClose={() => setShowClaimModal(false)}
-          onSuccess={() => setClaimCount((c) => c + 1)}
+          onClose={() => setShowReservationModal(false)}
+          onSuccess={() => setReservationCount((c) => c + 1)}
         />
       )}
       {showListModal && (
-        <ClaimListModal
+        <ReservationListModal
           wishItemId={item.id}
           onClose={() => setShowListModal(false)}
-          onCancelled={() => setClaimCount((c) => Math.max(0, c - 1))}
+          onCancelled={() => setReservationCount((c) => Math.max(0, c - 1))}
         />
       )}
     </div>

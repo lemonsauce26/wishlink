@@ -30,7 +30,7 @@ const VISIBILITY_OPTIONS = [
   { value: "private", label: "🔒 Private", description: "Only you can see this" },
 ] as const;
 
-const CLAIM_OPTIONS = [
+const RESERVATION_OPTIONS = [
   {
     value: "surprise",
     label: "Surprise Me!",
@@ -53,7 +53,7 @@ type FormValues = {
   event_type: string;
   event_date: string;
   visibility: "public" | "private" | "inner_circle";
-  claim_visibility: "surprise" | "show" | "verified";
+  reservation_visibility: "surprise" | "show" | "verified";
 };
 
 type Props = {
@@ -71,7 +71,7 @@ export function WishlistForm({ mode, wishlistId, defaultValues }: Props) {
     event_type: defaultValues?.event_type ?? "birthday",
     event_date: defaultValues?.event_date ?? "",
     visibility: defaultValues?.visibility ?? "public",
-    claim_visibility: defaultValues?.claim_visibility ?? "surprise",
+    reservation_visibility: defaultValues?.reservation_visibility ?? "surprise",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +91,7 @@ export function WishlistForm({ mode, wishlistId, defaultValues }: Props) {
       event_type: values.event_type,
       event_date: values.event_date || null,
       visibility: values.visibility,
-      claim_visibility: values.claim_visibility,
+      reservation_visibility: values.reservation_visibility,
     };
 
     if (mode === "create") {
@@ -188,26 +188,26 @@ export function WishlistForm({ mode, wishlistId, defaultValues }: Props) {
         </div>
       </div>
 
-      {/* Claim visibility */}
+      {/* Reservation visibility */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Who claimed what?</label>
+        <label className="text-sm font-medium">Reservation visibility</label>
         <div className="space-y-2">
-          {CLAIM_OPTIONS.map((opt) => (
+          {RESERVATION_OPTIONS.map((opt) => (
             <label
               key={opt.value}
               className={cn(
                 "flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
-                values.claim_visibility === opt.value
+                values.reservation_visibility === opt.value
                   ? "border-foreground bg-secondary"
                   : "border-border hover:bg-secondary/50"
               )}
             >
               <input
                 type="radio"
-                name="claim_visibility"
+                name="reservation_visibility"
                 value={opt.value}
-                checked={values.claim_visibility === opt.value}
-                onChange={() => set("claim_visibility", opt.value)}
+                checked={values.reservation_visibility === opt.value}
+                onChange={() => set("reservation_visibility", opt.value)}
                 className="mt-0.5"
               />
               <div>
