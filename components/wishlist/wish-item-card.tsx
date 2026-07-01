@@ -96,7 +96,7 @@ export function WishItemCard({ item, isOwner = false, reservationCount: initialC
               disabled={availableSlots <= 0}
               className="text-xs font-medium hover:opacity-70 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              + Reserve
+              + Reserve for someone
             </button>
           </div>
         </div>

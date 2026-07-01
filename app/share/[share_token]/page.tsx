@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { checkWishlistAccess } from "@/lib/wishlist-access";
+import { getReservationCountMap } from "@/lib/reservations";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ShareItemList } from "@/components/wishlist/share-item-list";
@@ -57,13 +58,44 @@ export default async function SharePage({ params }: { params: { share_token: str
   }
 
   const wishlist = result.wishlist;
+  const isOwner = wishlist.user_id === user?.id;
 
   const { data: items } = await supabaseAdmin
     .from("wish_items")
     .select("*")
-    .eq("wishlist_id", wishlist.id);
+    .eq("wishlist_id", wishlist.id)
+    .order("created_at", { ascending: false });
 
   const allItems = items ?? [];
+  const itemIds = allItems.map((i) => i.id);
+
+  const reservationCountMap = await getReservationCountMap(itemIds);
+
+  const myReservationMap: Record<string, string> = {};
+  if (user && !isOwner && itemIds.length > 0) {
+    const { data: myReservations } = await supabaseAdmin
+      .from("wishitem_reservations")
+      .select("id, wish_item_id")
+      .in("wish_item_id", itemIds)
+      .eq("user_id", user.id)
+      .is("cancelled_at", null);
+    for (const r of myReservations ?? []) {
+      myReservationMap[r.wish_item_id] = r.id;
+    }
+  }
+
+  let currentUser: { name: string; email: string } | null = null;
+  if (user) {
+    const { data: profile } = await supabaseAdmin
+      .from("users")
+      .select("display_name, email")
+      .eq("id", user.id)
+      .single();
+    currentUser = {
+      name: profile?.display_name ?? profile?.email ?? user.email!,
+      email: profile?.email ?? user.email!,
+    };
+  }
 
   const emoji = EVENT_EMOJI[wishlist.event_type] ?? "🎁";
   const date = wishlist.event_date
@@ -94,7 +126,15 @@ export default async function SharePage({ params }: { params: { share_token: str
             <p className="font-medium">No items yet</p>
           </div>
         ) : (
-          <ShareItemList items={allItems} />
+          <ShareItemList
+            items={allItems}
+            reservationCountMap={reservationCountMap}
+            reservationVisibility={wishlist.reservation_visibility}
+            isOwner={isOwner}
+            myReservationMap={myReservationMap}
+            shareToken={params.share_token}
+            currentUser={currentUser}
+          />
         )}
 
         <p className="text-center text-xs text-muted-foreground pt-4">

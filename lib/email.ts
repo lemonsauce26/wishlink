@@ -8,6 +8,98 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+export async function sendReservationConfirmationEmail({
+  to,
+  reserverName,
+  itemTitle,
+  ownerName,
+  cancelUrl,
+}: {
+  to: string;
+  reserverName: string;
+  itemTitle: string;
+  ownerName: string;
+  cancelUrl?: string;
+}): Promise<void> {
+  await transporter.sendMail({
+    from: `"WishLink" <${process.env.GMAIL_USER}>`,
+    to,
+    subject: `You reserved an item on ${ownerName}'s wishlist 🎁`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f9; margin: 0; padding: 40px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; margin: 0 auto;">
+            <tr>
+              <td style="background: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #e5e5e5;">
+                <p style="font-size: 13px; color: #888; margin: 0 0 24px;">WishLink</p>
+                <h1 style="font-size: 22px; font-weight: 700; color: #111; margin: 0 0 12px;">
+                  You're getting this! 🎉
+                </h1>
+                <p style="font-size: 15px; color: #444; margin: 0 0 32px; line-height: 1.6;">
+                  Hi <strong>${reserverName}</strong>! You've reserved
+                  <strong>"${itemTitle}"</strong> on ${ownerName}'s wishlist.
+                </p>
+                ${cancelUrl ? `
+                <a
+                  href="${cancelUrl}"
+                  style="display: inline-block; background: #f5f5f5; color: #555; text-decoration: none; font-size: 13px; font-weight: 500; padding: 10px 22px; border-radius: 8px; border: 1px solid #e0e0e0;"
+                >
+                  Cancel reservation
+                </a>
+                <p style="font-size: 12px; color: #aaa; margin: 24px 0 0; line-height: 1.5;">
+                  Changed your mind? Use the link above to cancel.
+                </p>` : `
+                <p style="font-size: 12px; color: #aaa; margin: 32px 0 0; line-height: 1.5;">
+                  You received this because you reserved an item on WishLink.
+                </p>`}
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `,
+  });
+}
+
+export async function sendReservationCancelledEmail({
+  to,
+  itemTitle,
+}: {
+  to: string;
+  itemTitle: string;
+}): Promise<void> {
+  await transporter.sendMail({
+    from: `"WishLink" <${process.env.GMAIL_USER}>`,
+    to,
+    subject: `Your reservation has been cancelled`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f9; margin: 0; padding: 40px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; margin: 0 auto;">
+            <tr>
+              <td style="background: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #e5e5e5;">
+                <p style="font-size: 13px; color: #888; margin: 0 0 24px;">WishLink</p>
+                <h1 style="font-size: 22px; font-weight: 700; color: #111; margin: 0 0 12px;">
+                  Reservation cancelled
+                </h1>
+                <p style="font-size: 15px; color: #444; margin: 0 0 32px; line-height: 1.6;">
+                  Your reservation for <strong>"${itemTitle}"</strong> has been cancelled.
+                  The slot is now available again.
+                </p>
+                <p style="font-size: 12px; color: #aaa; margin: 0; line-height: 1.5;">
+                  You received this because you had a reservation on WishLink.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `,
+  });
+}
+
 export async function sendItemUpdateEmail({
   to,
   ownerName,
@@ -33,12 +125,12 @@ export async function sendItemUpdateEmail({
                   Item updated 📝
                 </h1>
                 <p style="font-size: 15px; color: #444; margin: 0 0 32px; line-height: 1.6;">
-                  <strong>${ownerName}</strong> updated an item you claimed:
+                  <strong>${ownerName}</strong> updated an item you reserved:
                   <strong>"${itemTitle}"</strong>.<br/>
                   You may want to check if the details still work for you.
                 </p>
                 <p style="font-size: 12px; color: #aaa; margin: 32px 0 0; line-height: 1.5;">
-                  You received this because you claimed an item on WishLink.
+                  You received this because you reserved an item on WishLink.
                 </p>
               </td>
             </tr>
