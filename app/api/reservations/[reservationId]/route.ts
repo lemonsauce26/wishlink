@@ -13,7 +13,7 @@ export async function PATCH(
 
   const { data: reservation } = await supabaseAdmin
     .from("wishitem_reservations")
-    .select("id, wish_item_id, user_id, reserver_email")
+    .select("id, wish_item_id, user_id, reserver_email, reserved_by_owner")
     .eq("id", params.reservationId)
     .is("cancelled_at", null)
     .single();
@@ -43,7 +43,7 @@ export async function PATCH(
     .update({ cancelled_at: new Date().toISOString() })
     .eq("id", params.reservationId);
 
-  if (reservation.reserver_email) {
+  if (reservation.reserver_email && !reservation.reserved_by_owner) {
     sendReservationCancelledEmail({
       to: reservation.reserver_email,
       itemTitle: item?.title ?? "the item",
