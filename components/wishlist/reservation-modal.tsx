@@ -152,7 +152,9 @@ export function ReservationModal({
             />
           </div>
 
-          <p className="text-xs text-muted-foreground">{visibilityMessage}</p>
+          {reservationVisibility === "surprise" && (
+            <p className="text-xs text-muted-foreground">{visibilityMessage}</p>
+          )}
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 

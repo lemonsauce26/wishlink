@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendInviteEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
@@ -12,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   const normalizedEmail = email.trim().toLowerCase();
 
-  const { data: wishlist } = await supabase
+  const { data: wishlist } = await supabaseAdmin
     .from("wishlists")
     .select("id, title, share_token")
     .eq("id", wishlistId)
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "self_invite" }, { status: 400 });
   }
 
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseAdmin
     .from("wishlist_invites")
     .select("id, status")
     .eq("wishlist_id", wishlistId)
@@ -38,13 +39,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "already_invited" }, { status: 409 });
   }
 
-  const { data: owner } = await supabase
+  const { data: owner } = await supabaseAdmin
     .from("users")
     .select("display_name, email")
     .eq("id", user.id)
     .single();
 
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await supabaseAdmin
     .from("wishlist_invites")
     .insert({ wishlist_id: wishlistId, invitee_email: normalizedEmail })
     .select("id")
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
       shareToken: wishlist.share_token,
     });
   } catch {
-    await supabase.from("wishlist_invites").delete().eq("id", inserted.id);
+    await supabaseAdmin.from("wishlist_invites").delete().eq("id", inserted.id);
     return NextResponse.json({ error: "email_failed" }, { status: 500 });
   }
 

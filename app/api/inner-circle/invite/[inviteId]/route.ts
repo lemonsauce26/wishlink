@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function PATCH(
   _req: NextRequest,
@@ -9,7 +10,7 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: invite } = await supabase
+  const { data: invite } = await supabaseAdmin
     .from("wishlist_invites")
     .select("id, wishlist_id")
     .eq("id", params.inviteId)
@@ -17,7 +18,7 @@ export async function PATCH(
 
   if (!invite) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { data: wishlist } = await supabase
+  const { data: wishlist } = await supabaseAdmin
     .from("wishlists")
     .select("id")
     .eq("id", invite.wishlist_id)
@@ -26,7 +27,7 @@ export async function PATCH(
 
   if (!wishlist) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("wishlist_invites")
     .update({ status: "cancelled" })
     .eq("id", params.inviteId);

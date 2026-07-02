@@ -1,8 +1,25 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+function InnerCircleNotice() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") ?? "";
+  if (!next.startsWith("/share/")) return null;
+  return (
+    <div className="w-full rounded-xl border-2 border-foreground/10 bg-foreground text-background px-6 py-5 text-center space-y-2">
+      <p className="text-3xl">🎉</p>
+      <p className="text-lg font-bold tracking-tight">You're on the list!</p>
+      <p className="text-sm opacity-70">
+        This is an invite-only wishlist.<br />Sign in to get in.
+      </p>
+    </div>
+  );
+}
+
+function LoginContent() {
   const supabase = createClient();
 
   async function handleGoogleLogin() {
@@ -25,6 +42,8 @@ export default function LoginPage() {
             Share your wishlist. Get exactly what you want.
           </p>
         </div>
+
+        <InnerCircleNotice />
 
         <button
           onClick={handleGoogleLogin}
@@ -56,5 +75,13 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
   );
 }

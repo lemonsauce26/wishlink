@@ -55,6 +55,16 @@ Check items in order and remove when resolved.
 
 ---
 
+## Reservation Cancellation Email — No Distinction Between Self-Cancel and Owner-Forced Cancel
+
+- **Status:** Not started
+- **Reason:** When a reserver cancels their own reservation, and when the owner force-cancels it, the same `sendReservationCancelledEmail` is sent to the reserver. There's no way for the reserver to know whether they cancelled themselves or the owner removed them.
+- **Action:** Add a `cancelledBy: "self" | "owner"` param to `sendReservationCancelledEmail` and send different email copy per case. e.g. self-cancel → "Your reservation has been cancelled.", owner-cancel → "The wishlist owner has removed your reservation."
+- **Where:** `lib/email.ts` (email copy), `app/api/reservations/[reservationId]/route.ts` (determine who cancelled based on `user.id` vs `reservation.user_id`), `app/reservations/cancel/[cancelToken]/page.tsx` (always self-cancel, pass `"self"`)
+- **Prerequisite:** None
+
+---
+
 ## Extract event_type Data into a Single File
 
 - **Status:** Not started

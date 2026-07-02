@@ -32,12 +32,24 @@ export async function checkWishlistAccess({
 
   const { data: invite } = await supabaseAdmin
     .from("wishlist_invites")
-    .select("id")
+    .select("id, status")
     .eq("wishlist_id", wishlist.id)
     .eq("invitee_email", userEmail ?? "")
     .neq("status", "cancelled")
     .single();
 
   if (!invite) return { allowed: false, reason: "forbidden" };
+
+  if (invite.status === "pending") {
+    await supabaseAdmin
+      .from("wishlist_invites")
+      .update({
+        status: "accepted",
+        accepted_user_id: userId,
+        accepted_at: new Date().toISOString(),
+      })
+      .eq("id", invite.id);
+  }
+
   return { allowed: true, wishlist };
 }
