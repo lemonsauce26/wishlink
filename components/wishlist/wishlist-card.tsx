@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 const EVENT_EMOJI: Record<string, string> = {
   birthday: "🎂",
@@ -44,10 +43,17 @@ export function WishlistCard({ wishlist, onDeleted }: { wishlist: Wishlist; onDe
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   async function handleDelete() {
     setDeleting(true);
-    const supabase = createClient();
-    await supabase.from("wishlists").delete().eq("id", wishlist.id);
+    setDeleteError(null);
+    const res = await fetch(`/api/wishlists/${wishlist.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      setDeleteError("Failed to delete wishlist. Please try again.");
+      setDeleting(false);
+      return;
+    }
     onDeleted();
   }
 
@@ -73,6 +79,7 @@ export function WishlistCard({ wishlist, onDeleted }: { wishlist: Wishlist; onDe
       {confirming ? (
         <div className="space-y-2">
           <p className="text-sm text-destructive font-medium">Delete this wishlist?</p>
+          {deleteError && <p className="text-xs text-destructive">{deleteError}</p>}
           <div className="flex gap-2">
             <button
               onClick={() => setConfirming(false)}

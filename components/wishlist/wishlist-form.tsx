@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const EVENT_TYPES = [
@@ -64,7 +63,6 @@ type Props = {
 
 export function WishlistForm({ mode, wishlistId, defaultValues }: Props) {
   const router = useRouter();
-  const supabase = createClient();
 
   const [values, setValues] = useState<FormValues>({
     title: defaultValues?.title ?? "",
@@ -95,24 +93,22 @@ export function WishlistForm({ mode, wishlistId, defaultValues }: Props) {
     };
 
     if (mode === "create") {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/auth/login"); return; }
-
-      const { data, error: err } = await supabase
-        .from("wishlists")
-        .insert({ ...payload, user_id: user.id })
-        .select("id")
-        .single();
-
-      if (err) { setError(err.message); setLoading(false); return; }
+      const res = await fetch("/api/wishlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Failed to create wishlist"); setLoading(false); return; }
       router.push(`/wishlist/${data.id}`);
     } else {
-      const { error: err } = await supabase
-        .from("wishlists")
-        .update(payload)
-        .eq("id", wishlistId!);
-
-      if (err) { setError(err.message); setLoading(false); return; }
+      const res = await fetch(`/api/wishlists/${wishlistId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Failed to save"); setLoading(false); return; }
       router.push("/dashboard");
     }
   }

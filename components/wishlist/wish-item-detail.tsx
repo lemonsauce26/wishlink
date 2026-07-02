@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { WishItemForm } from "./wish-item-form";
 
 const PRIORITY_CONFIG = {
@@ -50,8 +49,11 @@ export function WishItemDetail({ item, wishlistId, isOwner }: Props) {
 
   async function handleDelete() {
     setDeleting(true);
-    const supabase = createClient();
-    await supabase.from("wish_items").delete().eq("id", item.id);
+    const res = await fetch(`/api/wish-items/${item.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      setDeleting(false);
+      return;
+    }
     router.push(`/wishlist/${wishlistId}`);
     router.refresh();
   }

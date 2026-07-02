@@ -173,18 +173,21 @@ export function WishItemForm({ mode, wishlistId, itemId, defaultValues }: Props)
     };
 
     if (mode === "create") {
-      const { error: err } = await supabase
-        .from("wish_items")
-        .insert({ ...payload, wishlist_id: wishlistId });
-
-      if (err) { setError(err.message); setLoading(false); return; }
+      const res = await fetch("/api/wish-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wishlistId, ...payload }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Failed to save"); setLoading(false); return; }
     } else {
-      const { error: err } = await supabase
-        .from("wish_items")
-        .update(payload)
-        .eq("id", itemId!);
-
-      if (err) { setError(err.message); setLoading(false); return; }
+      const res = await fetch(`/api/wish-items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Failed to save"); setLoading(false); return; }
 
       const hasNonQuantityChanges =
         payload.title !== defaultValues?.title ||
