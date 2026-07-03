@@ -44,13 +44,17 @@ export function WishItemDetail({ item, wishlistId, isOwner }: Props) {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const priority = PRIORITY_CONFIG[item.priority];
 
   async function handleDelete() {
     setDeleting(true);
+    setDeleteError(null);
     const res = await fetch(`/api/wish-items/${item.id}`, { method: "DELETE" });
     if (!res.ok) {
+      console.error("[WishItemDetail] delete failed", item.id, res.status);
+      setDeleteError("Failed to delete item. Please try again.");
       setDeleting(false);
       return;
     }
@@ -154,6 +158,7 @@ export function WishItemDetail({ item, wishlistId, isOwner }: Props) {
         confirming ? (
           <div className="space-y-2">
             <p className="text-sm text-destructive font-medium">Delete this item?</p>
+            {deleteError && <p className="text-sm text-destructive">{deleteError}</p>}
             <div className="flex gap-2">
               <button
                 onClick={() => setConfirming(false)}

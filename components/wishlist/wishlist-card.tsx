@@ -50,6 +50,7 @@ export function WishlistCard({ wishlist, onDeleted }: { wishlist: Wishlist; onDe
     setDeleteError(null);
     const res = await fetch(`/api/wishlists/${wishlist.id}`, { method: "DELETE" });
     if (!res.ok) {
+      console.error("[WishlistCard] delete failed", wishlist.id, res.status);
       setDeleteError("Failed to delete wishlist. Please try again.");
       setDeleting(false);
       return;

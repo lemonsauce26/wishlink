@@ -28,37 +28,44 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [confirmRevokeTarget, setConfirmRevokeTarget] = useState<Invite | null>(null);
   const [confirmReinviteTarget, setConfirmReinviteTarget] = useState<{ id: string; email: string } | null>(null);
+  const [revokeError, setRevokeError] = useState<string | null>(null);
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim() || formStatus === "loading") return;
     setFormStatus("loading");
 
-    const res = await fetch("/api/inner-circle/invite", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wishlistId, email: email.trim() }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/inner-circle/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wishlistId, email: email.trim() }),
+      });
+      const data = await res.json();
 
-    if (data.success) {
-      setPending((prev) => [
-        ...prev,
-        {
-          id: data.id,
-          invitee_email: email.trim().toLowerCase(),
-          status: "pending",
-          invited_at: new Date().toISOString(),
-        },
-      ]);
-      setEmail("");
-      setFormStatus("idle");
-    } else if (data.error === "previously_cancelled") {
-      setFormStatus("idle");
-      setConfirmReinviteTarget({ id: data.id, email: email.trim().toLowerCase() });
-    } else if (data.error === "already_invited") {
-      setFormStatus("duplicate");
-    } else {
+      if (data.success) {
+        setPending((prev) => [
+          ...prev,
+          {
+            id: data.id,
+            invitee_email: email.trim().toLowerCase(),
+            status: "pending",
+            invited_at: new Date().toISOString(),
+          },
+        ]);
+        setEmail("");
+        setFormStatus("idle");
+      } else if (data.error === "previously_cancelled") {
+        setFormStatus("idle");
+        setConfirmReinviteTarget({ id: data.id, email: email.trim().toLowerCase() });
+      } else if (data.error === "already_invited") {
+        setFormStatus("duplicate");
+      } else {
+        console.error("[InnerCircleClient] invite failed", wishlistId, email, data);
+        setFormStatus("error");
+      }
+    } catch (err) {
+      console.error("[InnerCircleClient] invite failed", wishlistId, email, err);
       setFormStatus("error");
     }
   }
@@ -80,6 +87,9 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
         ...prev,
       ]);
       setEmail("");
+    } else {
+      console.error("[InnerCircleClient] reinvite failed", wishlistId, reinviteEmail, data);
+      setFormStatus("error");
     }
   }
 
@@ -90,6 +100,7 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
     });
     setResendingId(null);
     if (!res.ok) {
+      console.error("[InnerCircleClient] resend failed", wishlistId, invite.invitee_email, res.status);
       setFormStatus("email_failed");
     }
   }
@@ -97,6 +108,7 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
   async function executeRevoke(invite: Invite) {
     setConfirmRevokeTarget(null);
     setCancellingId(invite.id);
+    setRevokeError(null);
 
     const res = await fetch(`/api/inner-circle/invite/${invite.id}`, {
       method: "PATCH",
@@ -111,6 +123,9 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
         setPending((prev) => prev.filter((i) => i.id !== invite.id));
       }
       setCancelled((prev) => [revokedInvite, ...prev]);
+    } else {
+      console.error("[InnerCircleClient] revoke failed", wishlistId, invite.invitee_email, data);
+      setRevokeError("Failed to revoke. Please try again.");
     }
     setCancellingId(null);
   }
@@ -156,6 +171,9 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
           )}
           {formStatus === "email_failed" && (
             <p className="text-sm text-destructive">Failed to send email. Please try again.</p>
+          )}
+          {revokeError && (
+            <p className="text-sm text-destructive">{revokeError}</p>
           )}
         </section>
 

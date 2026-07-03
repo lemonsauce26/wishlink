@@ -10,6 +10,7 @@ node_modules/
 .next/
 dist/
 out/
+tsconfig.tsbuildinfo
 
 # Personal context files
 MY_PROFILE.md

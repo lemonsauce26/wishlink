@@ -18,22 +18,37 @@ type Props = {
 export function ReservationListModal({ wishItemId, onClose, onCancelled }: Props) {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/reservations/item/${wishItemId}`)
       .then((r) => r.json())
       .then((data) => setReservations(data.reservations ?? []))
+      .catch((err) => {
+        console.error("[ReservationListModal] fetch failed", wishItemId, err);
+        setLoadError("Failed to load reservations. Please try again.");
+      })
       .finally(() => setLoading(false));
   }, [wishItemId]);
 
   async function handleCancel(reservationId: string) {
     setCancellingId(reservationId);
-    const res = await fetch(`/api/reservations/${reservationId}`, { method: "PATCH" });
-    const data = await res.json();
-    if (data.success) {
-      setReservations((prev) => prev.filter((r) => r.id !== reservationId));
-      onCancelled();
+    setCancelError(null);
+    try {
+      const res = await fetch(`/api/reservations/${reservationId}`, { method: "PATCH" });
+      const data = await res.json();
+      if (data.success) {
+        setReservations((prev) => prev.filter((r) => r.id !== reservationId));
+        onCancelled();
+      } else {
+        console.error("[ReservationListModal] cancel failed", reservationId, data);
+        setCancelError("Failed to cancel reservation. Please try again.");
+      }
+    } catch (err) {
+      console.error("[ReservationListModal] cancel failed", reservationId, err);
+      setCancelError("Failed to cancel reservation. Please try again.");
     }
     setCancellingId(null);
   }
@@ -45,6 +60,8 @@ export function ReservationListModal({ wishItemId, onClose, onCancelled }: Props
         <h3 className="font-semibold">Reservations</h3>
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading…</p>
+        ) : loadError ? (
+          <p className="text-sm text-destructive">{loadError}</p>
         ) : reservations.length === 0 ? (
           <p className="text-sm text-muted-foreground">No reservations yet.</p>
         ) : (
@@ -71,6 +88,7 @@ export function ReservationListModal({ wishItemId, onClose, onCancelled }: Props
             ))}
           </ul>
         )}
+        {cancelError && <p className="text-sm text-destructive">{cancelError}</p>}
         <button
           onClick={onClose}
           className="w-full rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"

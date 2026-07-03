@@ -67,24 +67,30 @@ export function ReservationModal({
     setLoading(true);
     setError(null);
 
-    const res = await fetch("/api/reservations/public", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        wishItemId,
-        name: isGuest ? name.trim() : currentUser!.name,
-        email: isGuest ? email.trim() : currentUser!.email,
-        note: note.trim() || undefined,
-      }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/reservations/public", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wishItemId,
+          name: isGuest ? name.trim() : currentUser!.name,
+          email: isGuest ? email.trim() : currentUser!.email,
+          note: note.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
 
-    if (data.success) {
-      onSuccess(data.id);
-      onClose();
-    } else if (data.error === "No slots available") {
-      setError("All slots are already reserved.");
-    } else {
+      if (data.success) {
+        onSuccess(data.id);
+        onClose();
+      } else if (data.error === "No slots available") {
+        setError("All slots are already reserved.");
+      } else {
+        console.error("[ReservationModal] submit failed", wishItemId, data);
+        setError("Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      console.error("[ReservationModal] submit failed", wishItemId, err);
       setError("Something went wrong. Please try again.");
     }
     setLoading(false);

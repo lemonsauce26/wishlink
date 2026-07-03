@@ -66,20 +66,30 @@ export function ShareItemList({
   const [myReservations, setMyReservations] = useState<Record<string, string>>(myReservationMap);
   const [activeModal, setActiveModal] = useState<ActiveModal | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [cancelErrors, setCancelErrors] = useState<Record<string, string>>({});
 
   const sorted = sortItems(items, sort);
 
   async function handleMemberCancel(itemId: string, reservationId: string) {
     setCancellingId(itemId);
-    const res = await fetch(`/api/reservations/${reservationId}`, { method: "PATCH" });
-    const data = await res.json();
-    if (data.success) {
-      setCounts((prev) => ({ ...prev, [itemId]: Math.max(0, (prev[itemId] ?? 0) - 1) }));
-      setMyReservations((prev) => {
-        const next = { ...prev };
-        delete next[itemId];
-        return next;
-      });
+    setCancelErrors((prev) => { const next = { ...prev }; delete next[itemId]; return next; });
+    try {
+      const res = await fetch(`/api/reservations/${reservationId}`, { method: "PATCH" });
+      const data = await res.json();
+      if (data.success) {
+        setCounts((prev) => ({ ...prev, [itemId]: Math.max(0, (prev[itemId] ?? 0) - 1) }));
+        setMyReservations((prev) => {
+          const next = { ...prev };
+          delete next[itemId];
+          return next;
+        });
+      } else {
+        console.error("[ShareItemList] cancel failed", itemId, data);
+        setCancelErrors((prev) => ({ ...prev, [itemId]: "Failed to cancel. Please try again." }));
+      }
+    } catch (err) {
+      console.error("[ShareItemList] cancel failed", itemId, err);
+      setCancelErrors((prev) => ({ ...prev, [itemId]: "Failed to cancel. Please try again." }));
     }
     setCancellingId(null);
   }
@@ -163,13 +173,18 @@ export function ShareItemList({
               ) : myReservationId ? (
                 <>
                   <span className="text-xs text-muted-foreground">✅ I&apos;m getting this!</span>
-                  <button
-                    onClick={() => handleMemberCancel(item.id, myReservationId)}
-                    disabled={cancellingId === item.id}
-                    className="ml-auto text-xs text-destructive hover:opacity-70 transition-opacity disabled:opacity-40"
-                  >
-                    {cancellingId === item.id ? "…" : "Cancel reservation"}
-                  </button>
+                  <div className="ml-auto flex flex-col items-end gap-1">
+                    <button
+                      onClick={() => handleMemberCancel(item.id, myReservationId)}
+                      disabled={cancellingId === item.id}
+                      className="text-xs text-destructive hover:opacity-70 transition-opacity disabled:opacity-40"
+                    >
+                      {cancellingId === item.id ? "…" : "Cancel reservation"}
+                    </button>
+                    {cancelErrors[item.id] && (
+                      <p className="text-xs text-destructive">{cancelErrors[item.id]}</p>
+                    )}
+                  </div>
                 </>
               ) : availableSlots > 0 ? (
                 <button

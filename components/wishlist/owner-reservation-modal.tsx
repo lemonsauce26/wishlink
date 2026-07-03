@@ -21,19 +21,25 @@ export function OwnerReservationModal({ wishItemId, onClose, onSuccess }: Props)
     setLoading(true);
     setError(null);
 
-    const res = await fetch("/api/reservations/owner", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wishItemId, name, email, note }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/reservations/owner", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wishItemId, name, email, note }),
+      });
+      const data = await res.json();
 
-    if (data.success) {
-      onSuccess();
-      onClose();
-    } else if (data.error === "No slots available") {
-      setError("All slots are already reserved.");
-    } else {
+      if (data.success) {
+        onSuccess();
+        onClose();
+      } else if (data.error === "No slots available") {
+        setError("All slots are already reserved.");
+      } else {
+        console.error("[OwnerReservationModal] submit failed", wishItemId, data);
+        setError("Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      console.error("[OwnerReservationModal] submit failed", wishItemId, err);
       setError("Something went wrong. Please try again.");
     }
     setLoading(false);
