@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getReservationCount } from "@/lib/reservations";
 
 async function verifyOwner(itemId: string, userId: string) {
   const { data: item } = await supabaseAdmin
@@ -32,6 +33,17 @@ export async function PATCH(
   }
 
   const body = await req.json();
+
+  if (body.quantity != null) {
+    const reservationCount = await getReservationCount(params.id);
+    if (body.quantity < reservationCount) {
+      return NextResponse.json(
+        { error: "quantity_below_reservations", reservationCount },
+        { status: 400 }
+      );
+    }
+  }
+
   const { error } = await supabaseAdmin
     .from("wish_items")
     .update(body)

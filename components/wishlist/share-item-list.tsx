@@ -213,14 +213,7 @@ export function ShareItemList({
           shareToken={shareToken}
           currentUser={currentUser}
           onClose={() => setActiveModal(null)}
-          onSuccess={(reservationId) => {
-            const itemId = activeModal.itemId;
-            setCounts((prev) => ({ ...prev, [itemId]: (prev[itemId] ?? 0) + 1 }));
-            if (currentUser) {
-              setMyReservations((prev) => ({ ...prev, [itemId]: reservationId }));
-            }
-            setActiveModal(null);
-          }}
+          onSuccess={() => {}}
         />
       )}
 

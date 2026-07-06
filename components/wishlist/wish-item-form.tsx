@@ -187,7 +187,15 @@ export function WishItemForm({ mode, wishlistId, itemId, defaultValues }: Props)
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Failed to save"); setLoading(false); return; }
+      if (!res.ok) {
+        if (data.error === "quantity_below_reservations") {
+          setError(`${data.reservationCount} reservation(s) already exist. Quantity can't be set below ${data.reservationCount}.`);
+        } else {
+          setError(data.error ?? "Failed to save");
+        }
+        setLoading(false);
+        return;
+      }
 
       const hasNonQuantityChanges =
         payload.title !== defaultValues?.title ||
@@ -269,6 +277,115 @@ export function WishItemForm({ mode, wishlistId, itemId, defaultValues }: Props)
         />
       </div>
 
+      {/* Note */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium">
+          Note <span className="text-muted-foreground font-normal">(optional)</span>
+        </label>
+        <textarea
+          value={values.note}
+          onChange={(e) => set("note", e.target.value)}
+          rows={2}
+          placeholder="Any size, color, or preference…"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+        />
+      </div>
+
+      {/* Quantity */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium">Quantity</label>
+        <input
+          type="number"
+          min="1"
+          value={values.quantity}
+          onChange={(e) => set("quantity", Math.max(1, parseInt(e.target.value) || 1))}
+          className="block w-1/2 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </div>
+
+      {/* Price + Currency */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium">
+          Price <span className="text-muted-foreground font-normal">(optional)</span>
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={values.price}
+            onChange={(e) => set("price", e.target.value)}
+            placeholder="0.00"
+            className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <select
+            value={values.currency}
+            onChange={(e) => set("currency", e.target.value)}
+            className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            {CURRENCY_OPTIONS.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Priority */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium">Priority</label>
+        <div className="flex gap-2">
+          {PRIORITY_OPTIONS.map((opt) => (
+            <label
+              key={opt.value}
+              className={cn(
+                "flex-1 text-center rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors",
+                values.priority === opt.value
+                  ? "border-foreground bg-secondary font-medium"
+                  : "border-border hover:bg-secondary/50"
+              )}
+            >
+              <input
+                type="radio"
+                name="priority"
+                value={opt.value}
+                checked={values.priority === opt.value}
+                onChange={() => set("priority", opt.value)}
+                className="hidden"
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Store */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium">
+          Store <span className="text-muted-foreground font-normal">(optional)</span>
+        </label>
+        <input
+          type="text"
+          value={values.store_name}
+          onChange={(e) => set("store_name", e.target.value)}
+          placeholder="e.g. Amazon"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </div>
+
+      {/* Product URL */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium">
+          Product URL <span className="text-muted-foreground font-normal">(optional)</span>
+        </label>
+        <input
+          type="url"
+          value={values.product_url}
+          onChange={(e) => set("product_url", e.target.value)}
+          placeholder="https://..."
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </div>
+
       {/* Image */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium">
@@ -310,101 +427,6 @@ export function WishItemForm({ mode, wishlistId, itemId, defaultValues }: Props)
             {imageError && <p className="text-sm text-destructive">{imageError}</p>}
           </>
         )}
-      </div>
-
-      {/* Price + Currency */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium">
-          Price <span className="text-muted-foreground font-normal">(optional)</span>
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={values.price}
-            onChange={(e) => set("price", e.target.value)}
-            placeholder="0.00"
-            className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <select
-            value={values.currency}
-            onChange={(e) => set("currency", e.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            {CURRENCY_OPTIONS.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Store + Product URL */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">
-            Store <span className="text-muted-foreground font-normal">(optional)</span>
-          </label>
-          <input
-            type="text"
-            value={values.store_name}
-            onChange={(e) => set("store_name", e.target.value)}
-            placeholder="e.g. Amazon"
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">
-            Product URL <span className="text-muted-foreground font-normal">(optional)</span>
-          </label>
-          <input
-            type="url"
-            value={values.product_url}
-            onChange={(e) => set("product_url", e.target.value)}
-            placeholder="https://..."
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-      </div>
-
-      {/* Priority */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium">Priority</label>
-        <div className="flex gap-2">
-          {PRIORITY_OPTIONS.map((opt) => (
-            <label
-              key={opt.value}
-              className={cn(
-                "flex-1 text-center rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors",
-                values.priority === opt.value
-                  ? "border-foreground bg-secondary font-medium"
-                  : "border-border hover:bg-secondary/50"
-              )}
-            >
-              <input
-                type="radio"
-                name="priority"
-                value={opt.value}
-                checked={values.priority === opt.value}
-                onChange={() => set("priority", opt.value)}
-                className="hidden"
-              />
-              {opt.label}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Quantity */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium">Quantity</label>
-        <input
-          type="number"
-          min="1"
-          value={values.quantity}
-          onChange={(e) => set("quantity", Math.max(1, parseInt(e.target.value) || 1))}
-          className="w-24 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        />
       </div>
 
       {/* Receiving method */}
@@ -453,20 +475,6 @@ export function WishItemForm({ mode, wishlistId, itemId, defaultValues }: Props)
           />
         </div>
       )}
-
-      {/* Note */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium">
-          Note <span className="text-muted-foreground font-normal">(optional)</span>
-        </label>
-        <textarea
-          value={values.note}
-          onChange={(e) => set("note", e.target.value)}
-          rows={2}
-          placeholder="Any size, color, or preference…"
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-        />
-      </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 

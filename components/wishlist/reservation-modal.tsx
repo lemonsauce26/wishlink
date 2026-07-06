@@ -25,6 +25,29 @@ export function ReservationModal({
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [succeeded, setSucceeded] = useState(false);
+
+  if (succeeded) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative z-10 bg-background rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-4 text-center">
+          <p className="text-3xl">🎉</p>
+          <h3 className="font-semibold">You&apos;re all set!</h3>
+          <p className="text-sm text-muted-foreground">Your reservation has been confirmed.</p>
+          {isGuest && (
+            <p className="text-sm text-muted-foreground">We&apos;ve sent your reservation details to your email!</p>
+          )}
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Verified Only + guest → login prompt
   if (reservationVisibility === "verified" && isGuest) {
@@ -81,8 +104,8 @@ export function ReservationModal({
       const data = await res.json();
 
       if (data.success) {
+        setSucceeded(true);
         onSuccess(data.id);
-        onClose();
       } else if (data.error === "No slots available") {
         setError("All slots are already reserved.");
       } else {

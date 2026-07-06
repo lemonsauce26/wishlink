@@ -35,26 +35,6 @@ Check items in order and remove when resolved.
 
 ---
 
-## Quantity Reduction Conflict with Existing Reservations
-
-- **Status:** Not started
-- **Reason:** When an owner reduces an item's quantity below the current active reservation count, the edit is saved silently — no validation or warning is shown. This can create an oversold state (more reservations than available slots).
-- **Action:** Before saving, check if `new_quantity < active_reservation_count`. If so, block the save and show an error: e.g. "Can't reduce quantity — X people have already reserved this item."
-- **Where:** `components/wishlist/wish-item-form.tsx` (client-side check) + optionally enforce server-side in `wish_items` update logic
-- **Prerequisite:** None
-
----
-
-## Guest Reservation — No Visual Feedback After Reserving (Multi-slot Items)
-
-- **Status:** Not started
-- **Reason:** After a guest successfully reserves an item that has multiple slots, the button state does not change to reflect their reservation. The slot count decreases (optimistic update), but the button still shows "🎁 I'll Get This!" instead of indicating the guest already reserved. This is confusing when multiple slots are available and a guest might accidentally reserve twice.
-- **Action:** After a successful guest reservation, store the reserved item ID (or a flag) in `sessionStorage`. On mount, `ShareItemList` reads from `sessionStorage` to restore the "I'm getting this!" state for the current session. Guest-side cancel would also need a token-based flow since we don't have a `reservationId` on the client for guests.
-- **Where:** `components/wishlist/share-item-list.tsx`, `components/wishlist/reservation-modal.tsx`
-- **Prerequisite:** None — low priority for single-slot items; becomes confusing with quantity > 1
-
----
-
 ## Reservation Cancellation Email — No Distinction Between Self-Cancel and Owner-Forced Cancel
 
 - **Status:** Not started
