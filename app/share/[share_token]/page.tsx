@@ -6,25 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ShareItemList } from "@/components/wishlist/share-item-list";
 import { AppHeader } from "@/components/layout/app-header";
-
-const EVENT_EMOJI: Record<string, string> = {
-  birthday: "🎂",
-  mothers_day: "🌸",
-  fathers_day: "👨",
-  valentines: "💝",
-  christmas: "🎄",
-  hanukkah: "🕎",
-  engagement: "💍",
-  bridal_shower: "👰",
-  wedding: "🥂",
-  anniversary: "🎊",
-  baby_shower: "👶",
-  graduation: "🎓",
-  new_job: "💼",
-  retirement: "🌅",
-  housewarming: "🏠",
-  just_because: "🎉",
-};
+import { EVENT_EMOJI } from "@/lib/constants/event-infos";
 
 export default async function SharePage({ params }: { params: { share_token: string } }) {
   const supabase = await createClient();

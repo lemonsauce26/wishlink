@@ -5,25 +5,7 @@ import { WishItemList } from "@/components/wishlist/wish-item-list";
 import { ShareButton } from "@/components/wishlist/share-button";
 import { AppHeader } from "@/components/layout/app-header";
 import { getReservationCountMap } from "@/lib/reservations";
-
-const EVENT_EMOJI: Record<string, string> = {
-  birthday: "🎂",
-  mothers_day: "🌸",
-  fathers_day: "👨",
-  valentines: "💝",
-  christmas: "🎄",
-  hanukkah: "🕎",
-  engagement: "💍",
-  bridal_shower: "👰",
-  wedding: "🥂",
-  anniversary: "🎊",
-  baby_shower: "👶",
-  graduation: "🎓",
-  new_job: "💼",
-  retirement: "🌅",
-  housewarming: "🏠",
-  just_because: "🎉",
-};
+import { EVENT_EMOJI } from "@/lib/constants/event-infos";
 
 const VISIBILITY_LABEL: Record<string, string> = {
   public: "Public",

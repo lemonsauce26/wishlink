@@ -45,11 +45,3 @@ Check items in order and remove when resolved.
 
 ---
 
-## Extract event_type Data into a Single File
-
-- **Status:** Not started
-- **Reason:** `EVENT_TYPES` (form) and `EVENT_EMOJI` (card display) are currently duplicated across two files
-  - `components/wishlist/wishlist-form.tsx`
-  - `components/wishlist/wishlist-card.tsx`
-- **Action:** Extract into a single source file (e.g. `lib/constants/event-types.ts`)
-- **Prerequisite:** None — handle during a future refactor pass

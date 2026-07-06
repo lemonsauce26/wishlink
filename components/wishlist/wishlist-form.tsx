@@ -4,24 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const EVENT_TYPES = [
-  { value: "birthday", label: "🎂 Birthday" },
-  { value: "mothers_day", label: "🌸 Mother's Day" },
-  { value: "fathers_day", label: "👨 Father's Day" },
-  { value: "valentines", label: "💝 Valentine's Day" },
-  { value: "christmas", label: "🎄 Christmas" },
-  { value: "hanukkah", label: "🕎 Hanukkah" },
-  { value: "engagement", label: "💍 Engagement" },
-  { value: "bridal_shower", label: "👰 Bridal Shower" },
-  { value: "wedding", label: "🥂 Wedding" },
-  { value: "anniversary", label: "🎊 Anniversary" },
-  { value: "baby_shower", label: "👶 Baby Shower" },
-  { value: "graduation", label: "🎓 Graduation" },
-  { value: "new_job", label: "💼 New Job" },
-  { value: "retirement", label: "🌅 Retirement" },
-  { value: "housewarming", label: "🏠 Housewarming" },
-  { value: "just_because", label: "🎉 Just Because" },
-] as const;
+import { EVENT_INFOS } from "@/lib/constants/event-infos";
 
 const VISIBILITY_OPTIONS = [
   { value: "public", label: "🌐 Public", description: "Anyone with the link can view" },
@@ -136,8 +119,8 @@ export function WishlistForm({ mode, wishlistId, defaultValues }: Props) {
           onChange={(e) => set("event_type", e.target.value)}
           className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
-          {EVENT_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
+          {EVENT_INFOS.map((t) => (
+            <option key={t.value} value={t.value}>{t.emoji} {t.label}</option>
           ))}
         </select>
       </div>
