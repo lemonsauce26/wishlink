@@ -65,6 +65,7 @@ export default async function CancelReservationPage({
     sendReservationCancelledEmail({
       to: reservation.reserver_email,
       itemTitle: item?.title ?? "the item",
+      cancelledBy: "self",
     }).catch(() => {});
   }
 

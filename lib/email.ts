@@ -65,14 +65,25 @@ export async function sendReservationConfirmationEmail({
 export async function sendReservationCancelledEmail({
   to,
   itemTitle,
+  cancelledBy,
 }: {
   to: string;
   itemTitle: string;
+  cancelledBy: "self" | "owner";
 }): Promise<void> {
+  const isByOwner = cancelledBy === "owner";
+  const subject = isByOwner
+    ? `Your reservation has been removed`
+    : `Your reservation has been cancelled`;
+  const heading = isByOwner ? `Reservation removed` : `Reservation cancelled`;
+  const body = isByOwner
+    ? `Heads up! The wishlist owner has made a change — your reservation for <strong>"${itemTitle}"</strong> has been removed. No worries, there are always more ways to show you care! 🎁`
+    : `Your reservation for <strong>"${itemTitle}"</strong> has been cancelled. The slot is now available again.`;
+
   await transporter.sendMail({
     from: `"WishLink" <${process.env.GMAIL_USER}>`,
     to,
-    subject: `Your reservation has been cancelled`,
+    subject,
     html: `
       <!DOCTYPE html>
       <html>
@@ -82,11 +93,10 @@ export async function sendReservationCancelledEmail({
               <td style="background: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #e5e5e5;">
                 <p style="font-size: 13px; color: #888; margin: 0 0 24px;">WishLink</p>
                 <h1 style="font-size: 22px; font-weight: 700; color: #111; margin: 0 0 12px;">
-                  Reservation cancelled
+                  ${heading}
                 </h1>
                 <p style="font-size: 15px; color: #444; margin: 0 0 32px; line-height: 1.6;">
-                  Your reservation for <strong>"${itemTitle}"</strong> has been cancelled.
-                  The slot is now available again.
+                  ${body}
                 </p>
                 <p style="font-size: 12px; color: #aaa; margin: 0; line-height: 1.5;">
                   You received this because you had a reservation on WishLink.

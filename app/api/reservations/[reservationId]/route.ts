@@ -47,6 +47,7 @@ export async function PATCH(
     sendReservationCancelledEmail({
       to: reservation.reserver_email,
       itemTitle: item?.title ?? "the item",
+      cancelledBy: isOwner ? "owner" : "self",
     }).catch(() => {});
   }
 

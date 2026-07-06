@@ -13,18 +13,6 @@ Check items in order and remove when resolved.
 
 ---
 
-## Landing Page (`/`)
-
-- **Status:** Not started
-- **Reason:** Planned after Feature 2 (wishlist management + dashboard) is complete
-- **Action:**
-  - Service introduction page for non-authenticated visitors
-  - Should be accessible after login as well (separate from dashboard)
-  - Include Google login button
-- **Prerequisite:** Feature 2 dashboard complete
-
----
-
 ## Price Parsing Improvement
 
 - **Status:** Not started
@@ -32,16 +20,6 @@ Check items in order and remove when resolved.
 - **Action:** Investigate a dedicated product data API or structured data extraction approach for more reliable price parsing
 - **Known limitation:** Sites with antibot protection (Cloudflare etc. — e.g. Osprey, many large retailers) return `EPROXYNEEDED` from Microlink free tier. Microlink PRO plan has residential proxies to bypass this.
 - **Prerequisite:** None — low priority, current UX (manual entry fallback) is acceptable
-
----
-
-## Reservation Cancellation Email — No Distinction Between Self-Cancel and Owner-Forced Cancel
-
-- **Status:** Not started
-- **Reason:** When a reserver cancels their own reservation, and when the owner force-cancels it, the same `sendReservationCancelledEmail` is sent to the reserver. There's no way for the reserver to know whether they cancelled themselves or the owner removed them.
-- **Action:** Add a `cancelledBy: "self" | "owner"` param to `sendReservationCancelledEmail` and send different email copy per case. e.g. self-cancel → "Your reservation has been cancelled.", owner-cancel → "The wishlist owner has removed your reservation."
-- **Where:** `lib/email.ts` (email copy), `app/api/reservations/[reservationId]/route.ts` (determine who cancelled based on `user.id` vs `reservation.user_id`), `app/reservations/cancel/[cancelToken]/page.tsx` (always self-cancel, pass `"self"`)
-- **Prerequisite:** None
 
 ---
 
