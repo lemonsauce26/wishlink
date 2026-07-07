@@ -16,10 +16,10 @@ Check items in order and remove when resolved.
 ## Price Parsing Improvement
 
 - **Status:** Not started
-- **Reason:** Microlink API does not reliably extract price from most e-commerce sites (Amazon, Best Buy, Walmart, etc.) — these sites don't expose price via og:price or JSON-LD metadata. Price field is left empty and filled in manually by the user.
-- **Action:** Investigate a dedicated product data API or structured data extraction approach for more reliable price parsing
-- **Known limitation:** Sites with antibot protection (Cloudflare etc. — e.g. Osprey, many large retailers) return `EPROXYNEEDED` from Microlink free tier. Microlink PRO plan has residential proxies to bypass this.
-- **Prerequisite:** None — low priority, current UX (manual entry fallback) is acceptable
+- **Reason:** Microlink API fails to reliably extract price and product info from sites with antibot protection (Amazon, Best Buy, etc.). A more capable API with antibot bypass support is needed, but most options are paid services.
+- **Action:** Before adopting a paid service, evaluate replacing Microlink with a more capable API that supports antibot bypass
+- **Known limitation:** Sites with antibot protection (Cloudflare, etc.) return `EPROXYNEEDED` from Microlink free tier. No reliable free alternative exists to bypass this.
+- **Prerequisite:** Decision needed on whether to use a paid API — current UX (manual entry fallback) is acceptable for now
 
 ---
 

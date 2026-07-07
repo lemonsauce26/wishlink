@@ -5,8 +5,9 @@ import { getActiveReservations } from "@/lib/reservations";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { itemId: string } }
+  { params }: { params: Promise<{ itemId: string }> }
 ) {
+  const { itemId } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,7 +15,7 @@ export async function GET(
   const { data: item } = await supabaseAdmin
     .from("wish_items")
     .select("wishlist_id")
-    .eq("id", params.itemId)
+    .eq("id", itemId)
     .single();
   if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -27,6 +28,6 @@ export async function GET(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const reservations = await getActiveReservations(params.itemId);
+  const reservations = await getActiveReservations(itemId);
   return NextResponse.json({ reservations });
 }

@@ -13,7 +13,8 @@ const VISIBILITY_LABEL: Record<string, string> = {
   inner_circle: "Inner Circle",
 };
 
-export default async function WishlistDetailPage({ params }: { params: { id: string } }) {
+export default async function WishlistDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -23,7 +24,7 @@ export default async function WishlistDetailPage({ params }: { params: { id: str
   const { data: wishlist } = await supabase
     .from("wishlists")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!wishlist) {
@@ -49,7 +50,7 @@ export default async function WishlistDetailPage({ params }: { params: { id: str
   const { data: items } = await supabase
     .from("wish_items")
     .select("*")
-    .eq("wishlist_id", params.id)
+    .eq("wishlist_id", id)
     .order("created_at", { ascending: false });
 
   const reservationCountMap = isOwner

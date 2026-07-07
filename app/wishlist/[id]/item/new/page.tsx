@@ -7,9 +7,11 @@ export default async function NewItemPage({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: { title?: string };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ title?: string }>;
 }) {
+  const { id } = await params;
+  const { title: queryTitle } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -18,7 +20,7 @@ export default async function NewItemPage({
   const { data: wishlist } = await supabase
     .from("wishlists")
     .select("id, title")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("user_id", user.id)
     .single();
 
@@ -32,8 +34,8 @@ export default async function NewItemPage({
         <h1 className="text-2xl font-bold mb-6">Add Item</h1>
         <WishItemForm
           mode="create"
-          wishlistId={params.id}
-          defaultValues={searchParams.title ? { title: searchParams.title } : undefined}
+          wishlistId={id}
+          defaultValues={queryTitle ? { title: queryTitle } : undefined}
         />
       </main>
     </div>

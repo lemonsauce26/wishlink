@@ -5,8 +5,9 @@ import { sendInviteEmail } from "@/lib/email";
 
 export async function PATCH(
   _req: NextRequest,
-  { params }: { params: { inviteId: string } }
+  { params }: { params: Promise<{ inviteId: string }> }
 ) {
+  const { inviteId } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,7 +15,7 @@ export async function PATCH(
   const { data: invite } = await supabaseAdmin
     .from("wishlist_invites")
     .select("id, wishlist_id, status, invitee_email")
-    .eq("id", params.inviteId)
+    .eq("id", inviteId)
     .single();
 
   if (!invite) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -43,7 +44,7 @@ export async function PATCH(
       accepted_at: null,
       accepted_user_id: null,
     })
-    .eq("id", params.inviteId);
+    .eq("id", inviteId);
 
   if (updateError) return NextResponse.json({ error: "Failed" }, { status: 500 });
 
@@ -58,7 +59,7 @@ export async function PATCH(
     await supabaseAdmin
       .from("wishlist_invites")
       .update({ status: "cancelled" as const })
-      .eq("id", params.inviteId);
+      .eq("id", inviteId);
     return NextResponse.json({ error: "email_failed" }, { status: 500 });
   }
 

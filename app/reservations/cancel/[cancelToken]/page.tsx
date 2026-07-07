@@ -6,12 +6,13 @@ import Link from "next/link";
 export default async function CancelReservationPage({
   params,
 }: {
-  params: { cancelToken: string };
+  params: Promise<{ cancelToken: string }>;
 }) {
+  const { cancelToken } = await params;
   const { data: reservation } = await supabaseAdmin
     .from("wishitem_reservations")
     .select("id, reserver_email, cancelled_at, wish_item_id")
-    .eq("cancel_token", params.cancelToken)
+    .eq("cancel_token", cancelToken)
     .single();
 
   if (!reservation) {

@@ -8,19 +8,20 @@ import { ShareItemList } from "@/components/wishlist/share-item-list";
 import { AppHeader } from "@/components/layout/app-header";
 import { EVENT_EMOJI } from "@/lib/constants/event-infos";
 
-export default async function SharePage({ params }: { params: { share_token: string } }) {
+export default async function SharePage({ params }: { params: Promise<{ share_token: string }> }) {
+  const { share_token } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   const result = await checkWishlistAccess({
-    shareToken: params.share_token,
+    shareToken: share_token,
     userId: user?.id ?? null,
     userEmail: user?.email ?? null,
   });
 
   if (!result.allowed) {
     if (result.reason === "redirect_login") {
-      redirect(`/auth/login?next=/share/${params.share_token}`);
+      redirect(`/auth/login?next=/share/${share_token}`);
     }
     if (result.reason === "forbidden") {
       return (
@@ -114,7 +115,7 @@ export default async function SharePage({ params }: { params: { share_token: str
             reservationVisibility={wishlist.reservation_visibility}
             isOwner={isOwner}
             myReservationMap={myReservationMap}
-            shareToken={params.share_token}
+            shareToken={share_token}
             currentUser={currentUser}
           />
         )}

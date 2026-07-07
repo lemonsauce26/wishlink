@@ -5,8 +5,9 @@ import { sendInviteEmail } from "@/lib/email";
 
 export async function POST(
   _req: NextRequest,
-  { params }: { params: { inviteId: string } }
+  { params }: { params: Promise<{ inviteId: string }> }
 ) {
+  const { inviteId } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,7 +15,7 @@ export async function POST(
   const { data: invite } = await supabaseAdmin
     .from("wishlist_invites")
     .select("id, wishlist_id, status, invitee_email")
-    .eq("id", params.inviteId)
+    .eq("id", inviteId)
     .single();
 
   if (!invite) return NextResponse.json({ error: "Not found" }, { status: 404 });

@@ -6,8 +6,9 @@ import { AppHeader } from "@/components/layout/app-header";
 export default async function ItemDetailPage({
   params,
 }: {
-  params: { id: string; itemId: string };
+  params: Promise<{ id: string; itemId: string }>;
 }) {
+  const { id, itemId } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -16,8 +17,8 @@ export default async function ItemDetailPage({
   const { data: item } = await supabase
     .from("wish_items")
     .select("*")
-    .eq("id", params.itemId)
-    .eq("wishlist_id", params.id)
+    .eq("id", itemId)
+    .eq("wishlist_id", id)
     .single();
 
   if (!item) notFound();
@@ -25,7 +26,7 @@ export default async function ItemDetailPage({
   const { data: wishlist } = await supabase
     .from("wishlists")
     .select("id, title, user_id")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!wishlist) notFound();
@@ -37,7 +38,7 @@ export default async function ItemDetailPage({
       <AppHeader />
 
       <main className="max-w-2xl mx-auto px-4 py-8">
-        <WishItemDetail item={item} wishlistId={params.id} isOwner={isOwner} />
+        <WishItemDetail item={item} wishlistId={id} isOwner={isOwner} />
       </main>
     </div>
   );

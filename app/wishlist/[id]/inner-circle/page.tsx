@@ -3,16 +3,17 @@ import { redirect } from "next/navigation";
 import { InnerCircleClient } from "./inner-circle-client";
 import { AppHeader } from "@/components/layout/app-header";
 
-export default async function InnerCirclePage({ params }: { params: { id: string } }) {
+export default async function InnerCirclePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect(`/auth/login?next=/wishlist/${params.id}/inner-circle`);
+  if (!user) redirect(`/auth/login?next=/wishlist/${id}/inner-circle`);
 
   const { data: wishlist } = await supabase
     .from("wishlists")
     .select("id, title, user_id")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!wishlist || wishlist.user_id !== user.id) redirect("/dashboard");
@@ -20,7 +21,7 @@ export default async function InnerCirclePage({ params }: { params: { id: string
   const { data: invites } = await supabase
     .from("wishlist_invites")
     .select("id, invitee_email, status, invited_at")
-    .eq("wishlist_id", params.id)
+    .eq("wishlist_id", id)
     .order("invited_at", { ascending: false });
 
   const allInvites = invites ?? [];
@@ -39,7 +40,7 @@ export default async function InnerCirclePage({ params }: { params: { id: string
         </p>
 
         <InnerCircleClient
-          wishlistId={params.id}
+          wishlistId={id}
           initialPending={pending}
           initialAccepted={accepted}
           initialCancelled={cancelled}

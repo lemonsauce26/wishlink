@@ -3,7 +3,8 @@ import { redirect, notFound } from "next/navigation";
 import { AiRecommendClient } from "@/components/wishlist/ai-recommend-client";
 import { AppHeader } from "@/components/layout/app-header";
 
-export default async function RecommendPage({ params }: { params: { id: string } }) {
+export default async function RecommendPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -12,7 +13,7 @@ export default async function RecommendPage({ params }: { params: { id: string }
   const { data: wishlist } = await supabase
     .from("wishlists")
     .select("id, title")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("user_id", user.id)
     .single();
 
@@ -30,7 +31,7 @@ export default async function RecommendPage({ params }: { params: { id: string }
           </p>
         </div>
 
-        <AiRecommendClient wishlistId={params.id} wishlistTitle={wishlist.title} />
+        <AiRecommendClient wishlistId={id} wishlistTitle={wishlist.title} />
       </main>
     </div>
   );

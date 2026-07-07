@@ -5,8 +5,9 @@ import { sendReservationCancelledEmail } from "@/lib/email";
 
 export async function PATCH(
   _req: NextRequest,
-  { params }: { params: { reservationId: string } }
+  { params }: { params: Promise<{ reservationId: string }> }
 ) {
+  const { reservationId } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,7 +15,7 @@ export async function PATCH(
   const { data: reservation } = await supabaseAdmin
     .from("wishitem_reservations")
     .select("id, wish_item_id, user_id, reserver_email, reserved_by_owner")
-    .eq("id", params.reservationId)
+    .eq("id", reservationId)
     .is("cancelled_at", null)
     .single();
   if (!reservation) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -41,7 +42,7 @@ export async function PATCH(
   await supabaseAdmin
     .from("wishitem_reservations")
     .update({ cancelled_at: new Date().toISOString() })
-    .eq("id", params.reservationId);
+    .eq("id", reservationId);
 
   if (reservation.reserver_email && !reservation.reserved_by_owner) {
     sendReservationCancelledEmail({

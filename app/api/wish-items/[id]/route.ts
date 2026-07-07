@@ -22,20 +22,21 @@ async function verifyOwner(itemId: string, userId: string) {
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!await verifyOwner(params.id, user.id)) {
+  if (!await verifyOwner(id, user.id)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await req.json();
 
   if (body.quantity != null) {
-    const reservationCount = await getReservationCount(params.id);
+    const reservationCount = await getReservationCount(id);
     if (body.quantity < reservationCount) {
       return NextResponse.json(
         { error: "quantity_below_reservations", reservationCount },
@@ -47,7 +48,7 @@ export async function PATCH(
   const { error } = await supabaseAdmin
     .from("wish_items")
     .update(body)
-    .eq("id", params.id);
+    .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -56,20 +57,21 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!await verifyOwner(params.id, user.id)) {
+  if (!await verifyOwner(id, user.id)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { error } = await supabaseAdmin
     .from("wish_items")
     .delete()
-    .eq("id", params.id);
+    .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

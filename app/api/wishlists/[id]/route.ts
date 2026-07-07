@@ -14,13 +14,14 @@ async function verifyOwner(id: string, userId: string) {
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!await verifyOwner(params.id, user.id)) {
+  if (!await verifyOwner(id, user.id)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -30,7 +31,7 @@ export async function PATCH(
   const { error } = await supabaseAdmin
     .from("wishlists")
     .update({ title, event_type, event_date: event_date || null, visibility, reservation_visibility })
-    .eq("id", params.id);
+    .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -39,20 +40,21 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!await verifyOwner(params.id, user.id)) {
+  if (!await verifyOwner(id, user.id)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { error } = await supabaseAdmin
     .from("wishlists")
     .delete()
-    .eq("id", params.id);
+    .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
