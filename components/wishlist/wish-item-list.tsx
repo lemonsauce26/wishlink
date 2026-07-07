@@ -39,9 +39,10 @@ type Props = {
   items: WishItem[];
   isOwner?: boolean;
   reservationCountMap?: Record<string, number>;
+  reservationVisibility?: string;
 };
 
-export function WishItemList({ items, isOwner = false, reservationCountMap = {} }: Props) {
+export function WishItemList({ items, isOwner = false, reservationCountMap = {}, reservationVisibility }: Props) {
   const [sort, setSort] = useState<SortOption>("priority");
   const sorted = sortItems(items, sort);
 
@@ -65,6 +66,7 @@ export function WishItemList({ items, isOwner = false, reservationCountMap = {} 
           item={item}
           isOwner={isOwner}
           reservationCount={reservationCountMap[item.id] ?? 0}
+          reservationVisibility={reservationVisibility}
         />
       ))}
     </div>

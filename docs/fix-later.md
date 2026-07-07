@@ -13,6 +13,15 @@ Check items in order and remove when resolved.
 
 ---
 
+## Reservation Visibility Option Change Behavior
+
+- **Status:** Not started
+- **Reason:** When the owner changes `reservation_visibility` from `Surprise Me` to `Show Me Who Cares` or `Verified Only`, the behavior for existing reservations is undefined — previously hidden reservations would suddenly become visible to the owner.
+- **Action:** Decide and implement how to handle this transition (e.g., warn the owner before saving, clear existing reservations, or grandfather in existing data)
+- **Prerequisite:** Product decision needed on intended behavior
+
+---
+
 ## Price Parsing Improvement
 
 - **Status:** Not started

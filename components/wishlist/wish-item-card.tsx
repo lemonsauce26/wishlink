@@ -27,15 +27,25 @@ type Props = {
   item: WishItem;
   isOwner?: boolean;
   reservationCount?: number;
+  reservationVisibility?: string;
 };
 
-export function WishItemCard({ item, isOwner = false, reservationCount: initialClaimCount = 0 }: Props) {
+export function WishItemCard({ item, isOwner = false, reservationCount: initialClaimCount = 0, reservationVisibility }: Props) {
   const priority = PRIORITY_CONFIG[item.priority];
   const [reservationCount, setReservationCount] = useState(initialClaimCount);
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
+  const [showSurpriseModal, setShowSurpriseModal] = useState(false);
 
   const availableSlots = item.quantity - reservationCount;
+
+  const handleViewReservations = () => {
+    if (reservationVisibility === "surprise") {
+      setShowSurpriseModal(true);
+    } else {
+      setShowListModal(true);
+    }
+  };
 
   return (
     <div className="rounded-xl border border-border overflow-hidden">
@@ -85,7 +95,7 @@ export function WishItemCard({ item, isOwner = false, reservationCount: initialC
           <div className="flex gap-2 ml-auto">
             {reservationCount > 0 && (
               <button
-                onClick={() => setShowListModal(true)}
+                onClick={handleViewReservations}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 View reservations
@@ -97,6 +107,24 @@ export function WishItemCard({ item, isOwner = false, reservationCount: initialC
               className="text-xs font-medium hover:opacity-70 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
             >
               + Reserve for someone
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showSurpriseModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowSurpriseModal(false)}>
+          <div className="bg-background rounded-2xl p-6 max-w-xs w-full mx-4 space-y-3 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <p className="text-2xl">🎁</p>
+            <p className="font-semibold">No peeking!</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              You set this wishlist to <strong>Surprise Me</strong>, so who reserved what stays a secret — even from you. Sit back and enjoy the surprise!
+            </p>
+            <button
+              onClick={() => setShowSurpriseModal(false)}
+              className="w-full mt-2 rounded-xl bg-foreground text-background text-sm font-medium py-2 hover:opacity-80 transition-opacity"
+            >
+              Got it 🎉
             </button>
           </div>
         </div>

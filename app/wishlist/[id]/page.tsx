@@ -134,7 +134,7 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
             )}
           </div>
         ) : (
-          <WishItemList items={items ?? []} isOwner={isOwner} reservationCountMap={reservationCountMap} />
+          <WishItemList items={items ?? []} isOwner={isOwner} reservationCountMap={reservationCountMap} reservationVisibility={wishlist.reservation_visibility} />
         )}
       </main>
     </div>
