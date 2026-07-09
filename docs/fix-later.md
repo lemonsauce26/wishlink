@@ -2,23 +2,13 @@
 
 ---
 
-## Next.js Security Vulnerability Upgrade
-
-- **Status:** Not started
-- **Reason:** Current Next.js 14.2.18 has a known security vulnerability (flagged by npm install)
-- **Action:** Upgrade to a patched version after MVP development is complete
-- **Ref:** https://nextjs.org/blog/security-update-2025-12-11
-
-Check items in order and remove when resolved.
-
----
-
 ## Reservation Visibility Option Change Behavior
 
-- **Status:** Not started
-- **Reason:** When the owner changes `reservation_visibility` from `Surprise Me` to `Show Me Who Cares` or `Verified Only`, the behavior for existing reservations is undefined — previously hidden reservations would suddenly become visible to the owner.
-- **Action:** Decide and implement how to handle this transition (e.g., warn the owner before saving, clear existing reservations, or grandfather in existing data)
-- **Prerequisite:** Product decision needed on intended behavior
+- **Status:** Decision made — not yet implemented
+- **Reason:** When the owner changes `reservation_visibility` from `Surprise Me` to `Show Me Who Cares` or `Verified Only`, reservers who reserved expecting anonymity could be suddenly exposed without their consent.
+- **Decision (Option A):** Store the visibility state at reservation time via a `was_anonymous` boolean column on `wishitem_reservations`. Even if the owner changes the wishlist setting later, reservations made under `Surprise Me` remain hidden permanently. New reservations follow the updated setting.
+- **Action:** Add `was_anonymous` column to `wishitem_reservations` table (Supabase migration). Update reservation creation logic to set this flag. Update reservation display logic to respect `was_anonymous` over current wishlist setting.
+- **Prerequisite:** Supabase schema migration required
 
 ---
 

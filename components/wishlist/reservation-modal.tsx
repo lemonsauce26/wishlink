@@ -81,7 +81,7 @@ export function ReservationModal({
 
   const visibilityMessage =
     reservationVisibility === "surprise"
-      ? "The owner won't see who's getting this"
+      ? "The owner won't see who's getting this — unless they change their wishlist settings."
       : "The wishlist owner will see your name";
 
   async function handleSubmit(e: React.FormEvent) {
