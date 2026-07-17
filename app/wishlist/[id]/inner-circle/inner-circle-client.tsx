@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
+import { Loader2 } from "lucide-react";
 
 type Invite = {
   id: string;
@@ -16,7 +18,17 @@ type Props = {
   initialCancelled: Invite[];
 };
 
-type InviteFormStatus = "idle" | "loading" | "duplicate" | "error" | "email_failed";
+type InviteFormStatus = "idle" | "loading";
+
+type EmailActionState =
+  | { phase: "idle" }
+  | { phase: "loading" }
+  | { phase: "result"; success: boolean; message: string };
+
+function emailErrorMessage(code: number | null, context: string): string {
+  const prefix = code ? `[${code}] ` : "";
+  return `${prefix}${context}`;
+}
 
 export function InnerCircleClient({ wishlistId, initialPending, initialAccepted, initialCancelled }: Props) {
   const [pending, setPending] = useState(initialPending);
@@ -24,16 +36,15 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
   const [cancelled, setCancelled] = useState(initialCancelled);
   const [email, setEmail] = useState("");
   const [formStatus, setFormStatus] = useState<InviteFormStatus>("idle");
-  const [cancellingId, setCancellingId] = useState<string | null>(null);
-  const [resendingId, setResendingId] = useState<string | null>(null);
   const [confirmRevokeTarget, setConfirmRevokeTarget] = useState<Invite | null>(null);
   const [confirmReinviteTarget, setConfirmReinviteTarget] = useState<{ id: string; email: string } | null>(null);
-  const [revokeError, setRevokeError] = useState<string | null>(null);
+  const [emailAction, setEmailAction] = useState<EmailActionState>({ phase: "idle" });
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim() || formStatus === "loading") return;
     setFormStatus("loading");
+    setEmailAction({ phase: "loading" });
 
     try {
       const res = await fetch("/api/inner-circle/invite", {
@@ -44,29 +55,31 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
       const data = await res.json();
 
       if (data.success) {
+        const sentEmail = email.trim().toLowerCase();
         setPending((prev) => [
           ...prev,
-          {
-            id: data.id,
-            invitee_email: email.trim().toLowerCase(),
-            status: "pending",
-            invited_at: new Date().toISOString(),
-          },
+          { id: data.id, invitee_email: sentEmail, status: "pending", invited_at: new Date().toISOString() },
         ]);
         setEmail("");
         setFormStatus("idle");
+        setEmailAction({ phase: "result", success: true, message: `Invite sent to ${sentEmail}! 🎉` });
       } else if (data.error === "previously_cancelled") {
+        setEmailAction({ phase: "idle" });
         setFormStatus("idle");
         setConfirmReinviteTarget({ id: data.id, email: email.trim().toLowerCase() });
       } else if (data.error === "already_invited") {
-        setFormStatus("duplicate");
+        setFormStatus("idle");
+        setEmailAction({ phase: "result", success: false, message: "Looks like they've already been invited!" });
+      } else if (data.error === "email_failed") {
+        setFormStatus("idle");
+        setEmailAction({ phase: "result", success: false, message: emailErrorMessage(data.code, "Oops! Couldn't send the invite. Please try again!") });
       } else {
-        console.error("[InnerCircleClient] invite failed", wishlistId, email, data);
-        setFormStatus("error");
+        setFormStatus("idle");
+        setEmailAction({ phase: "result", success: false, message: "Oops! Something went wrong. Please try again!" });
       }
-    } catch (err) {
-      console.error("[InnerCircleClient] invite failed", wishlistId, email, err);
-      setFormStatus("error");
+    } catch {
+      setFormStatus("idle");
+      setEmailAction({ phase: "result", success: false, message: "Oops! Something went wrong. Please try again!" });
     }
   }
 
@@ -74,45 +87,54 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
     if (!confirmReinviteTarget) return;
     const { id, email: reinviteEmail } = confirmReinviteTarget;
     setConfirmReinviteTarget(null);
+    setEmailAction({ phase: "loading" });
 
-    const res = await fetch(`/api/inner-circle/invite/${id}/reinvite`, {
-      method: "PATCH",
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch(`/api/inner-circle/invite/${id}/reinvite`, { method: "PATCH" });
+      const data = await res.json();
 
-    if (data.success) {
-      setCancelled((prev) => prev.filter((i) => i.id !== id));
-      setPending((prev) => [
-        { id, invitee_email: reinviteEmail, status: "pending", invited_at: new Date().toISOString() },
-        ...prev,
-      ]);
-      setEmail("");
-    } else {
-      console.error("[InnerCircleClient] reinvite failed", wishlistId, reinviteEmail, data);
-      setFormStatus("error");
+      if (data.success) {
+        setCancelled((prev) => prev.filter((i) => i.id !== id));
+        setPending((prev) => [
+          { id, invitee_email: reinviteEmail, status: "pending", invited_at: new Date().toISOString() },
+          ...prev,
+        ]);
+        setEmail("");
+        setEmailAction({ phase: "result", success: true, message: `Invite sent to ${reinviteEmail} again! 🎉` });
+      } else if (data.error === "email_failed") {
+        setEmailAction({ phase: "result", success: false, message: emailErrorMessage(data.code, "Oops! Couldn't send the invite. Please try again!") });
+      } else {
+        setEmailAction({ phase: "result", success: false, message: "Oops! Something went wrong. Please try again!" });
+      }
+    } catch {
+      setEmailAction({ phase: "result", success: false, message: "Oops! Something went wrong. Please try again!" });
     }
   }
 
   async function handleResend(invite: Invite) {
-    setResendingId(invite.id);
-    const res = await fetch(`/api/inner-circle/invite/${invite.id}/resend`, {
-      method: "POST",
-    });
-    setResendingId(null);
-    if (!res.ok) {
-      console.error("[InnerCircleClient] resend failed", wishlistId, invite.invitee_email, res.status);
-      setFormStatus("email_failed");
+    setEmailAction({ phase: "loading" });
+
+    try {
+      const res = await fetch(`/api/inner-circle/invite/${invite.id}/resend`, { method: "POST" });
+      const data = await res.json();
+
+      if (res.ok) {
+        setEmailAction({ phase: "result", success: true, message: `Invite resent to ${invite.invitee_email}! 🎉` });
+      } else if (data.error === "email_failed") {
+        setEmailAction({ phase: "result", success: false, message: emailErrorMessage(data.code, "Oops! Couldn't resend the invite. Please try again!") });
+      } else {
+        setEmailAction({ phase: "result", success: false, message: "Oops! Something went wrong. Please try again!" });
+      }
+    } catch {
+      setEmailAction({ phase: "result", success: false, message: "Oops! Something went wrong. Please try again!" });
     }
   }
 
   async function executeRevoke(invite: Invite) {
     setConfirmRevokeTarget(null);
-    setCancellingId(invite.id);
-    setRevokeError(null);
+    setEmailAction({ phase: "loading" });
 
-    const res = await fetch(`/api/inner-circle/invite/${invite.id}`, {
-      method: "PATCH",
-    });
+    const res = await fetch(`/api/inner-circle/invite/${invite.id}`, { method: "PATCH" });
     const data = await res.json();
 
     if (data.success) {
@@ -123,19 +145,20 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
         setPending((prev) => prev.filter((i) => i.id !== invite.id));
       }
       setCancelled((prev) => [revokedInvite, ...prev]);
+      const successMsg = invite.status === "accepted"
+        ? `${invite.invitee_email}'s access has been revoked.`
+        : `Invite to ${invite.invitee_email} has been cancelled.`;
+      setEmailAction({ phase: "result", success: true, message: successMsg });
     } else {
-      console.error("[InnerCircleClient] revoke failed", wishlistId, invite.invitee_email, data);
-      setRevokeError("Failed to revoke. Please try again.");
+      const failMsg = invite.status === "accepted"
+        ? "Oops! Couldn't revoke access. Please try again!"
+        : "Oops! Couldn't cancel the invite. Please try again!";
+      setEmailAction({ phase: "result", success: false, message: failMsg });
     }
-    setCancellingId(null);
   }
 
   function handleRevokeClick(invite: Invite) {
-    if (invite.status === "accepted") {
-      setConfirmRevokeTarget(invite);
-    } else {
-      executeRevoke(invite);
-    }
+    setConfirmRevokeTarget(invite);
   }
 
   return (
@@ -148,10 +171,7 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
             <input
               type="email"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (formStatus === "duplicate" || formStatus === "error") setFormStatus("idle");
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Email address"
               className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-foreground/20"
             />
@@ -160,21 +180,9 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
               disabled={formStatus === "loading"}
               className="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 whitespace-nowrap"
             >
-              {formStatus === "loading" ? "…" : "Send Invite"}
+              Send Invite
             </button>
           </form>
-          {formStatus === "duplicate" && (
-            <p className="text-sm text-destructive">This email has already been invited</p>
-          )}
-          {formStatus === "error" && (
-            <p className="text-sm text-destructive">Something went wrong. Please try again.</p>
-          )}
-          {formStatus === "email_failed" && (
-            <p className="text-sm text-destructive">Failed to send email. Please try again.</p>
-          )}
-          {revokeError && (
-            <p className="text-sm text-destructive">{revokeError}</p>
-          )}
         </section>
 
         {/* Accepted */}
@@ -191,10 +199,9 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
                   <span className="text-sm">{invite.invitee_email}</span>
                   <button
                     onClick={() => handleRevokeClick(invite)}
-                    disabled={cancellingId === invite.id}
-                    className="text-sm text-destructive hover:opacity-70 transition-opacity disabled:opacity-40"
+                    className="text-sm text-destructive hover:opacity-70 transition-opacity"
                   >
-                    {cancellingId === invite.id ? "…" : "Revoke"}
+                    Revoke
                   </button>
                 </li>
               ))}
@@ -217,17 +224,15 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleResend(invite)}
-                      disabled={resendingId === invite.id}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      {resendingId === invite.id ? "…" : "Resend"}
+                      Resend
                     </button>
                     <button
                       onClick={() => handleRevokeClick(invite)}
-                      disabled={cancellingId === invite.id}
-                      className="text-sm text-destructive hover:opacity-70 transition-opacity disabled:opacity-40"
+                      className="text-sm text-destructive hover:opacity-70 transition-opacity"
                     >
-                      {cancellingId === invite.id ? "…" : "Cancel"}
+                      Cancel
                     </button>
                   </div>
                 </li>
@@ -253,36 +258,65 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
         )}
       </div>
 
-      {/* Confirm revoke modal */}
-      {confirmRevokeTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {emailAction.phase === "loading" && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-white animate-spin" />
+        </div>,
+        document.body
+      )}
+
+      {emailAction.phase === "result" && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative z-10 bg-background rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-4">
+            <p className="text-2xl">{emailAction.success ? "✅" : "❌"}</p>
+            <p className="font-semibold">{emailAction.success ? "All done!" : "Uh-oh!"}</p>
+            <p className="text-sm text-muted-foreground">{emailAction.message}</p>
+            <button
+              onClick={() => setEmailAction({ phase: "idle" })}
+              className="w-full rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {confirmRevokeTarget && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setConfirmRevokeTarget(null)} />
           <div className="relative z-10 bg-background rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-4">
-            <h3 className="font-semibold">Revoke access?</h3>
+            <h3 className="font-semibold">
+              {confirmRevokeTarget.status === "pending" ? "Cancel this invitation?" : "Revoke access?"}
+            </h3>
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{confirmRevokeTarget.invitee_email}</span> will no longer be able to view this wishlist.
+              <span className="font-medium text-foreground">{confirmRevokeTarget.invitee_email}</span>
+              {confirmRevokeTarget.status === "pending"
+                ? " will no longer receive the invitation."
+                : " will no longer be able to view this wishlist."}
             </p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setConfirmRevokeTarget(null)}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
               >
-                Cancel
+                Close
               </button>
               <button
                 onClick={() => executeRevoke(confirmRevokeTarget)}
                 className="rounded-lg bg-destructive text-white px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
               >
-                Revoke
+                {confirmRevokeTarget.status === "pending" ? "Cancel Invitation" : "Revoke"}
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Confirm re-invite modal */}
-      {confirmReinviteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {confirmReinviteTarget && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setConfirmReinviteTarget(null)} />
           <div className="relative z-10 bg-background rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-4">
             <h3 className="font-semibold">Re-invite this person?</h3>
@@ -304,7 +338,8 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

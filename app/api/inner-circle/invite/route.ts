@@ -60,9 +60,10 @@ export async function POST(req: NextRequest) {
       wishlistTitle: wishlist.title,
       shareToken: wishlist.share_token,
     });
-  } catch {
+  } catch (err: unknown) {
     await supabaseAdmin.from("wishlist_invites").delete().eq("id", inserted.id);
-    return NextResponse.json({ error: "email_failed" }, { status: 500 });
+    const smtpCode = (err as { responseCode?: number }).responseCode ?? null;
+    return NextResponse.json({ error: "email_failed", code: smtpCode }, { status: 500 });
   }
 
   return NextResponse.json({ success: true, id: inserted.id });

@@ -43,8 +43,9 @@ export async function POST(
       wishlistTitle: wishlist.title,
       shareToken: wishlist.share_token,
     });
-  } catch {
-    return NextResponse.json({ error: "email_failed" }, { status: 500 });
+  } catch (err: unknown) {
+    const smtpCode = (err as { responseCode?: number }).responseCode ?? null;
+    return NextResponse.json({ error: "email_failed", code: smtpCode }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

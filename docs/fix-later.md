@@ -12,6 +12,15 @@
 
 ---
 
+## Email Service Migration
+
+- **Status:** Not started
+- **Reason:** Currently using Gmail SMTP via nodemailer. Delivery failures (e.g. unknown recipient domain) are handled asynchronously by Gmail — the app has no way to detect them. A transactional email provider (Resend, SendGrid, Mailgun) is needed to receive delivery webhooks and surface accurate error messages to the user.
+- **Action:** Replace Gmail SMTP with a transactional email service. Update error handling and user-facing messages in result modals to reflect actual delivery status.
+- **Prerequisite:** Choose and sign up for a transactional email provider
+
+---
+
 ## Price Parsing Improvement
 
 - **Status:** Not started
