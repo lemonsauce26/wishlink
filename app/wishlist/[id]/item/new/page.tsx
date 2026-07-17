@@ -27,7 +27,7 @@ export default async function NewItemPage({
   if (!wishlist) notFound();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
 
       <main className="max-w-2xl mx-auto px-4 py-8">

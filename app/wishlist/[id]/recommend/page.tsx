@@ -20,7 +20,7 @@ export default async function RecommendPage({ params }: { params: Promise<{ id: 
   if (!wishlist) notFound();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">

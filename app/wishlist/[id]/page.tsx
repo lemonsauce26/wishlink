@@ -29,7 +29,7 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
 
   if (!wishlist) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center">
         <div className="text-center space-y-3">
           <p className="text-4xl">🔒</p>
           <p className="font-medium">This wishlist is private</p>
@@ -67,7 +67,7 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
     : null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">

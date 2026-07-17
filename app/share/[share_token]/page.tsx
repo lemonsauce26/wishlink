@@ -25,7 +25,7 @@ export default async function SharePage({ params }: { params: Promise<{ share_to
     }
     if (result.reason === "forbidden") {
       return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-dvh bg-background">
           <AppHeader />
           <main className="max-w-4xl mx-auto px-4 py-24 text-center space-y-3">
             <p className="text-4xl">🔍</p>
@@ -90,7 +90,7 @@ export default async function SharePage({ params }: { params: Promise<{ share_to
     : null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         <div>

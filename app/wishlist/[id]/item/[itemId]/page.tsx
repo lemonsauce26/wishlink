@@ -34,7 +34,7 @@ export default async function ItemDetailPage({
   const isOwner = wishlist.user_id === user.id;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
 
       <main className="max-w-2xl mx-auto px-4 py-8">

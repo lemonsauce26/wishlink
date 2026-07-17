@@ -20,7 +20,7 @@ export default async function EditWishlistPage({ params }: { params: Promise<{ i
   if (!wishlist) notFound();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
 
       <div className="max-w-lg mx-auto px-4 py-10">

@@ -32,7 +32,7 @@ function LoginContent() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+    <main className="min-h-dvh flex flex-col items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm flex flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-3">
           <span className="text-5xl">🎁</span>

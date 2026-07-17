@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   if (!user) redirect("/auth/login");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
 
       <main className="max-w-4xl mx-auto px-4 py-8">

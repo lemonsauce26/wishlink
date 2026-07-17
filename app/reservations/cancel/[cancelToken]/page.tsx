@@ -17,7 +17,7 @@ export default async function CancelReservationPage({
 
   if (!reservation) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <main className="max-w-md mx-auto px-4 py-24 text-center space-y-3">
           <p className="text-4xl">🔍</p>
@@ -35,7 +35,7 @@ export default async function CancelReservationPage({
 
   if (reservation.cancelled_at) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <main className="max-w-md mx-auto px-4 py-24 text-center space-y-3">
           <p className="text-4xl">✅</p>
@@ -71,7 +71,7 @@ export default async function CancelReservationPage({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <main className="max-w-md mx-auto px-4 py-24 text-center space-y-3">
         <p className="text-4xl">🙌</p>
