@@ -99,12 +99,12 @@ export function WishItemDetail({ item, wishlistId, isOwner }: Props) {
 
       {/* Title + meta */}
       <div>
-        <div className="flex items-start justify-between gap-4">
-          <h1 className="text-2xl font-bold">{item.title}</h1>
-          <div className="flex items-center gap-1.5 flex-shrink-0 mt-1">
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5">
             <span className={`w-2 h-2 rounded-full ${priority.dot}`} />
             <span className="text-xs text-muted-foreground">{priority.label}</span>
           </div>
+          <h1 className="text-xl font-medium">{item.title}</h1>
         </div>
 
         {(item.price != null || item.store_name) && (

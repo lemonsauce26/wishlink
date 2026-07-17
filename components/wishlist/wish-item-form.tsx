@@ -272,6 +272,7 @@ export function WishItemForm({ mode, wishlistId, itemId, defaultValues }: Props)
           value={values.title}
           onChange={(e) => set("title", e.target.value)}
           placeholder="e.g. AirPods Pro (2nd Gen)"
+          maxLength={100}
           required
           className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
