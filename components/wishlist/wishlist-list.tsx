@@ -45,7 +45,7 @@ export function WishlistList() {
         </div>
         <Link
           href="/wishlist/new"
-          className="rounded-lg bg-foreground text-background px-5 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+          className="rounded-lg bg-emerald-600 text-white px-5 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
         >
           Create your first wishlist
         </Link>

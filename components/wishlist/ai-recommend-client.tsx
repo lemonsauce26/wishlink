@@ -102,7 +102,7 @@ export function AiRecommendClient({ wishlistId, wishlistTitle }: Props) {
 
           <Link
             href={`/wishlist/${wishlistId}/item/new?title=${encodeURIComponent(rec.name)}`}
-            className="block w-full text-center rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+            className="block w-full text-center rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
           >
             + Add to Wishlist
           </Link>

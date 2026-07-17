@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { WishItemCard } from "./wish-item-card";
 
 type WishItem = {
@@ -37,18 +38,35 @@ function sortItems(items: WishItem[], sort: SortOption): WishItem[] {
 
 type Props = {
   items: WishItem[];
+  wishlistId: string;
   isOwner?: boolean;
   reservationCountMap?: Record<string, number>;
   reservationVisibility?: string;
 };
 
-export function WishItemList({ items, isOwner = false, reservationCountMap = {}, reservationVisibility }: Props) {
+export function WishItemList({ items, wishlistId, isOwner = false, reservationCountMap = {}, reservationVisibility }: Props) {
   const [sort, setSort] = useState<SortOption>("priority");
   const sorted = sortItems(items, sort);
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
+      <div className="flex flex-col gap-2 items-end sm:flex-row sm:items-center sm:justify-end">
+        {isOwner && (
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/wishlist/${wishlistId}/item/new`}
+              className="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
+            >
+              + Add
+            </Link>
+            <Link
+              href={`/wishlist/${wishlistId}/recommend`}
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+            >
+              ✨ AI Ideas
+            </Link>
+          </div>
+        )}
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}

@@ -72,7 +72,7 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
             <h1 className="text-2xl font-bold">
               {emoji} {wishlist.title}
@@ -83,7 +83,7 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
             </p>
           </div>
           {isOwner && (
-            <div className="flex gap-2 flex-shrink-0">
+            <div className="flex flex-wrap gap-2">
               <Link
                 href={`/wishlist/${wishlist.id}/edit`}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
@@ -103,18 +103,6 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
                   Manage Inner Circle
                 </Link>
               )}
-              <Link
-                href={`/wishlist/${wishlist.id}/recommend`}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
-              >
-                ✨ AI Ideas
-              </Link>
-              <Link
-                href={`/wishlist/${wishlist.id}/item/new`}
-                className="rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
-              >
-                + Add Item
-              </Link>
             </div>
           )}
         </div>
@@ -134,7 +122,7 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
             )}
           </div>
         ) : (
-          <WishItemList items={items ?? []} isOwner={isOwner} reservationCountMap={reservationCountMap} reservationVisibility={wishlist.reservation_visibility} />
+          <WishItemList items={items ?? []} wishlistId={wishlist.id} isOwner={isOwner} reservationCountMap={reservationCountMap} reservationVisibility={wishlist.reservation_visibility} />
         )}
       </main>
     </div>

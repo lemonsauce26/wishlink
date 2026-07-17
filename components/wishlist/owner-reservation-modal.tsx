@@ -102,7 +102,7 @@ export function OwnerReservationModal({ wishItemId, onClose, onSuccess }: Props)
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="flex-1 rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="flex-1 rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50"
             >
               {loading ? "Saving…" : "Add"}
             </button>

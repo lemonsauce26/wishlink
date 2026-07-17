@@ -189,7 +189,7 @@ export function ShareItemList({
               ) : availableSlots > 0 ? (
                 <button
                   onClick={() => setActiveModal({ type: "reserve", itemId: item.id })}
-                  className="ml-auto rounded-lg bg-foreground text-background px-3 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity"
+                  className="ml-auto rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-sm font-medium hover:bg-emerald-700 transition-colors"
                 >
                   🎁 I&apos;ll Get This!
                 </button>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Check, User } from "lucide-react";
 import { OwnerReservationModal } from "./owner-reservation-modal";
 import { ReservationListModal } from "./reservation-list-modal";
 
@@ -82,25 +83,23 @@ export function WishItemCard({ item, isOwner = false, reservationCount: initialC
       </Link>
 
       {isOwner && (
-        <div className="flex items-center gap-3 px-4 py-2 border-t border-border bg-secondary/30">
+        <div className="flex items-center gap-3 px-4 py-2 border-t border-border bg-secondary/30 flex-wrap">
           {reservationCount > 0 ? (
-            <span className="text-xs text-muted-foreground">
-              ✅ {reservationCount}/{item.quantity} reserved
-            </span>
+            <button
+              onClick={handleViewReservations}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Check className="w-3.5 h-3.5 text-emerald-600" />{reservationCount}/{item.quantity} reserved
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-600">
+                <User className="w-2.5 h-2.5 text-white" />
+              </span>
+            </button>
           ) : (
             <span className="text-xs text-muted-foreground">
               {item.quantity} slot{item.quantity > 1 ? "s" : ""}
             </span>
           )}
-          <div className="flex gap-2 ml-auto">
-            {reservationCount > 0 && (
-              <button
-                onClick={handleViewReservations}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                View reservations
-              </button>
-            )}
+          <div className="flex gap-2 ml-auto flex-shrink-0">
             <button
               onClick={() => setShowReservationModal(true)}
               disabled={availableSlots <= 0}
@@ -122,7 +121,7 @@ export function WishItemCard({ item, isOwner = false, reservationCount: initialC
             </p>
             <button
               onClick={() => setShowSurpriseModal(false)}
-              className="w-full mt-2 rounded-xl bg-foreground text-background text-sm font-medium py-2 hover:opacity-80 transition-opacity"
+              className="w-full mt-2 rounded-xl bg-emerald-600 text-white text-sm font-medium py-2 hover:bg-emerald-700 transition-colors"
             >
               Got it 🎉
             </button>

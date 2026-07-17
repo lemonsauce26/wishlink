@@ -40,7 +40,7 @@ export function ReservationModal({
           )}
           <button
             onClick={() => window.location.reload()}
-            className="w-full rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+            className="w-full rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
           >
             확인
           </button>
@@ -69,7 +69,7 @@ export function ReservationModal({
             </button>
             <a
               href={`/auth/login?next=/share/${shareToken}`}
-              className="flex-1 rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity text-center"
+              className="flex-1 rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors text-center"
             >
               Sign In
             </a>
@@ -198,7 +198,7 @@ export function ReservationModal({
             <button
               type="submit"
               disabled={loading || (isGuest && (!name.trim() || !email.trim()))}
-              className="flex-1 rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="flex-1 rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50"
             >
               {loading ? "Reserving…" : "🎁 I'll Get This!"}
             </button>

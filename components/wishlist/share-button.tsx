@@ -122,7 +122,7 @@ export function ShareButton({ wishlistId, shareToken, visibility }: Props) {
                   />
                   <button
                     onClick={handleCopy}
-                    className="rounded-lg bg-foreground text-background px-3 py-2 text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+                    className="rounded-lg bg-emerald-600 text-white px-3 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors whitespace-nowrap"
                   >
                     {copied ? "Copied!" : "Copy Link"}
                   </button>
@@ -163,7 +163,7 @@ export function ShareButton({ wishlistId, shareToken, visibility }: Props) {
                   <button
                     type="submit"
                     disabled={inviteStatus === "loading"}
-                    className="rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50"
                   >
                     {inviteStatus === "loading" ? "…" : "Invite"}
                   </button>

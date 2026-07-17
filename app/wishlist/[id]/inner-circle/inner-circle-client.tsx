@@ -158,7 +158,7 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
             <button
               type="submit"
               disabled={formStatus === "loading"}
-              className="rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap"
+              className="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 whitespace-nowrap"
             >
               {formStatus === "loading" ? "…" : "Send Invite"}
             </button>
@@ -298,7 +298,7 @@ export function InnerCircleClient({ wishlistId, initialPending, initialAccepted,
               </button>
               <button
                 onClick={executeReinvite}
-                className="rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                className="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
               >
                 Re-invite
               </button>
