@@ -21,7 +21,7 @@ export default async function DashboardPage() {
             href="/wishlist/new"
             className="rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
           >
-            + Add Wishlist
+            + Add
           </Link>
         </div>
         <WishlistList />
