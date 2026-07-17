@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { LogoutButton } from "@/components/ui/logout-button";
+import { HeaderUserMenu } from "@/components/layout/header-user-menu";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import Link from "next/link";
 
 export async function AppHeader() {
@@ -19,13 +20,13 @@ export async function AppHeader() {
   return (
     <header className="border-b border-border">
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/dashboard" className="text-sm font-medium">WishLink</Link>
+        <div className="flex items-center gap-2">
+          <MobileNav />
+          <Link href="/dashboard" className="text-sm font-medium">WishLink</Link>
+        </div>
         <div className="flex items-center gap-4">
           {user ? (
-            <>
-              <span className="text-sm text-muted-foreground truncate max-w-[140px] sm:max-w-none">{displayName}</span>
-              <LogoutButton />
-            </>
+            <HeaderUserMenu displayName={displayName ?? ""} />
           ) : (
             <Link
               href="/auth/login"

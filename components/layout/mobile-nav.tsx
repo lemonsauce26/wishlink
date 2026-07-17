@@ -1,0 +1,61 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { Menu, X } from "lucide-react";
+
+export function MobileNav() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        aria-label="Open menu"
+        className="sm:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {typeof window !== "undefined" && createPortal(
+        <>
+          {/* Dim overlay */}
+          <div
+            className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-500 ease-out sm:hidden ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+            onClick={() => setOpen(false)}
+          />
+
+          {/* Drawer */}
+          <div
+            className={`fixed inset-y-0 left-0 z-50 w-64 bg-background shadow-xl will-change-transform transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] sm:hidden ${open ? "translate-x-0" : "-translate-x-full"}`}
+          >
+            <div className="flex items-center justify-between px-4 h-14 border-b border-border">
+              <span className="text-sm font-medium">Menu</span>
+              <button
+                onClick={() => setOpen(false)}
+                aria-label="Close menu"
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <nav className="p-4 space-y-1">
+              {/* 메뉴 추가 예정 */}
+            </nav>
+          </div>
+        </>,
+        document.body
+      )}
+    </>
+  );
+}
