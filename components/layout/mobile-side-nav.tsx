@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
+import Link from "next/link";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -26,7 +32,7 @@ export function MobileNav() {
         <Menu className="w-5 h-5" />
       </button>
 
-      {typeof window !== "undefined" && createPortal(
+      {mounted && createPortal(
         <>
           {/* Dim overlay */}
           <div
@@ -50,7 +56,11 @@ export function MobileNav() {
             </div>
 
             <nav className="p-4 space-y-1">
-              {/* 메뉴 추가 예정 */}
+              <Link href="/dashboard" onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
+                <LayoutDashboard className="w-4 h-4 text-muted-foreground" />
+                Dashboard
+              </Link>
             </nav>
           </div>
         </>,

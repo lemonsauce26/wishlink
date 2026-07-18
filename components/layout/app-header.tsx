@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
-import { MobileNav } from "@/components/layout/mobile-nav";
+import { MobileNav } from "@/components/layout/mobile-side-nav";
 import Link from "next/link";
 
 export async function AppHeader() {
