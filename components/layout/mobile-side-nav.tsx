@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Menu, X, LayoutDashboard } from "lucide-react";
+import { Menu, X, LayoutDashboard, LayoutList } from "lucide-react";
 import Link from "next/link";
 
 export function MobileNav() {
@@ -60,6 +60,11 @@ export function MobileNav() {
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
                 <LayoutDashboard className="w-4 h-4 text-muted-foreground" />
                 Dashboard
+              </Link>
+              <Link href="/wishlists" onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
+                <LayoutList className="w-4 h-4 text-muted-foreground" />
+                My Wishlists
               </Link>
             </nav>
           </div>

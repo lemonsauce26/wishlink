@@ -4,11 +4,11 @@ import Link from "next/link";
 import { WishlistList } from "@/components/wishlist/wishlist-list";
 import { AppShell } from "@/components/layout/app-shell";
 
-export default async function DashboardPage() {
+export default async function MyWishlistsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/auth/login?next=/wishlists");
 
   return (
     <AppShell>
