@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, LayoutList, Heart } from "lucide-react";
+import { LayoutDashboard, LayoutList, Heart, Gift } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/wishlists", icon: LayoutList, label: "My Wishlists" },
   { href: "/following", icon: Heart, label: "Following" },
+  { href: "/reservations", icon: Gift, label: "My Reservations" },
 ];
 
 export function SideNav() {
