@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -10,16 +11,21 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      await supabase.from("users").upsert(
-        {
+      const { data: existing } = await supabaseAdmin
+        .from("users")
+        .select("id")
+        .eq("id", data.user.id)
+        .single();
+
+      if (!existing) {
+        await supabaseAdmin.from("users").insert({
           id: data.user.id,
           email: data.user.email!,
           display_name: data.user.user_metadata?.full_name ?? null,
           avatar_url: data.user.user_metadata?.avatar_url ?? null,
           provider: data.user.app_metadata?.provider ?? "google",
-        },
-        { onConflict: "id" }
-      );
+        });
+      }
 
       return NextResponse.redirect(`${origin}/dashboard`);
     }

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
 import { MobileNav } from "@/components/layout/mobile-side-nav";
 import Link from "next/link";
@@ -8,13 +9,15 @@ export async function AppHeader() {
   const { data: { user } } = await supabase.auth.getUser();
 
   let displayName: string | null = null;
+  let avatarUrl: string | null = null;
   if (user) {
-    const { data: profile } = await supabase
+    const { data: profile } = await supabaseAdmin
       .from("users")
-      .select("display_name")
+      .select("display_name, avatar_url")
       .eq("id", user.id)
       .single();
     displayName = profile?.display_name ?? user.email ?? null;
+    avatarUrl = profile?.avatar_url ?? null;
   }
 
   return (
@@ -26,7 +29,7 @@ export async function AppHeader() {
         </div>
         <div className="flex items-center gap-4">
           {user ? (
-            <HeaderUserMenu displayName={displayName ?? ""} />
+            <HeaderUserMenu displayName={displayName ?? ""} avatarUrl={avatarUrl} />
           ) : (
             <Link
               href="/auth/login"
