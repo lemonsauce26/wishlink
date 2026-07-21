@@ -10,9 +10,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { title, event_type, event_date, visibility, reservation_visibility } = body;
 
+  const now = new Date().toISOString();
   const { data, error } = await supabaseAdmin
     .from("wishlists")
-    .insert({ title, event_type, event_date: event_date || null, visibility, reservation_visibility, user_id: user.id })
+    .insert({ title, event_type, event_date: event_date || null, visibility, reservation_visibility, user_id: user.id, updated_at: now })
     .select("id")
     .single();
 

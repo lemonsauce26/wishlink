@@ -30,7 +30,7 @@ export async function PATCH(
 
   const { error } = await supabaseAdmin
     .from("wishlists")
-    .update({ title, event_type, event_date: event_date || null, visibility, reservation_visibility })
+    .update({ title, event_type, event_date: event_date || null, visibility, reservation_visibility, updated_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
