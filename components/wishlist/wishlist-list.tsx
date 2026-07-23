@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { WishlistCard } from "./wishlist-card";
 
 type Wishlist = {
@@ -14,22 +13,35 @@ type Wishlist = {
   item_count?: number;
 };
 
+const SORT_OPTIONS = [
+  { label: "Newest", sort: "created_at", order: "desc" },
+  { label: "Recently updated", sort: "updated_at", order: "desc" },
+  { label: "Name A–Z", sort: "title", order: "asc" },
+  { label: "Event date", sort: "event_date", order: "asc" },
+] as const;
+
+type SortOption = (typeof SORT_OPTIONS)[number];
+
 export function WishlistList() {
   const [wishlists, setWishlists] = useState<Wishlist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortIndex, setSortIndex] = useState(0);
 
-  const fetchWishlists = useCallback(async () => {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("wishlists")
-      .select("id, title, event_type, event_date, visibility")
-      .order("created_at", { ascending: false });
-
-    setWishlists(data ?? []);
+  const fetchWishlists = useCallback(async (opt: SortOption) => {
+    setLoading(true);
+    const res = await fetch(`/api/wishlists?sort=${opt.sort}&order=${opt.order}`);
+    const data = await res.json();
+    setWishlists(Array.isArray(data) ? data : []);
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchWishlists(); }, [fetchWishlists]);
+  useEffect(() => {
+    fetchWishlists(SORT_OPTIONS[sortIndex]);
+  }, [fetchWishlists, sortIndex]);
+
+  const handleRefresh = useCallback(() => {
+    fetchWishlists(SORT_OPTIONS[sortIndex]);
+  }, [fetchWishlists, sortIndex]);
 
   if (loading) {
     return <p className="text-sm text-muted-foreground">Loading…</p>;
@@ -54,10 +66,23 @@ export function WishlistList() {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {wishlists.map((w) => (
-        <WishlistCard key={w.id} wishlist={w} onDeleted={fetchWishlists} />
-      ))}
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <select
+          value={sortIndex}
+          onChange={(e) => setSortIndex(Number(e.target.value))}
+          className="text-sm border border-border rounded-lg px-3 py-1.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          {SORT_OPTIONS.map((opt, i) => (
+            <option key={opt.sort + opt.order} value={i}>{opt.label}</option>
+          ))}
+        </select>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {wishlists.map((w) => (
+          <WishlistCard key={w.id} wishlist={w} onDeleted={handleRefresh} />
+        ))}
+      </div>
     </div>
   );
 }
