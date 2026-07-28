@@ -14,7 +14,7 @@ export default async function MyPage() {
 
   const { data: profile } = await supabaseAdmin
     .from("users")
-    .select("display_name, email, avatar_url, created_at")
+    .select("display_name, nickname, email, avatar_url, created_at")
     .eq("id", user.id)
     .single();
 
@@ -32,7 +32,8 @@ export default async function MyPage() {
         <h1 className="text-xl font-bold mb-8">My Page</h1>
         <MyPageClient
           userId={user.id}
-          initialName={profile?.display_name ?? ""}
+          displayName={profile?.display_name ?? ""}
+          initialNickname={profile?.nickname ?? ""}
           email={profile?.email ?? user.email ?? ""}
           avatarUrl={profile?.avatar_url ?? null}
           joinedAt={joinedAt}

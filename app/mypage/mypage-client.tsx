@@ -6,9 +6,12 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { User, X, Camera } from "lucide-react";
 
+const NICKNAME_REGEX = /^[a-zA-Z0-9_]{2,20}$/;
+
 type Props = {
   userId: string;
-  initialName: string;
+  displayName: string;
+  initialNickname: string;
   email: string;
   avatarUrl: string | null;
   joinedAt: string | null;
@@ -18,12 +21,15 @@ type ResultModal = { success: boolean; message: string };
 
 export function MyPageClient({
   userId,
-  initialName,
+  displayName,
+  initialNickname,
   email,
   avatarUrl: initialAvatarUrl,
   joinedAt,
 }: Props) {
-  const [displayName, setDisplayName] = useState(initialName);
+  const [nickname, setNickname] = useState(initialNickname);
+  const [checked, setChecked] = useState<"available" | "taken" | null>(null);
+  const [checking, setChecking] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [showPreview, setShowPreview] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -34,25 +40,49 @@ export function MyPageClient({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
-  async function handleSaveName() {
-    if (saving || displayName.trim().length === 0) return;
+  const isValidFormat = NICKNAME_REGEX.test(nickname.trim());
+  const nicknameChanged = nickname.trim() !== initialNickname;
+  const canSave = nicknameChanged && checked === "available";
+
+  function handleNicknameChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setNickname(e.target.value);
+    setChecked(null);
+  }
+
+  async function handleCheck() {
+    if (!isValidFormat) return;
+    setChecking(true);
+
+    const res = await fetch("/api/users/nickname-check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nickname: nickname.trim() }),
+    });
+    const data = await res.json();
+    setChecked(data.available ? "available" : "taken");
+    setChecking(false);
+  }
+
+  async function handleSaveNickname() {
+    if (!canSave || saving) return;
     setSaving(true);
 
-    const res = await fetch("/api/users/profile", {
-      method: "PATCH",
+    const res = await fetch("/api/users/nickname", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ display_name: displayName.trim() }),
+      body: JSON.stringify({ nickname: nickname.trim() }),
     });
 
     setSaving(false);
-    if (!res.ok) {
-      setResultModal({ success: false, message: "Failed to update your name. Please try again." });
+    if (res.status === 409) {
+      setChecked("taken");
+      setResultModal({ success: false, message: "This nickname is already taken." });
+    } else if (!res.ok) {
+      setResultModal({ success: false, message: "Failed to update nickname. Please try again." });
     } else {
-      setResultModal({ success: true, message: "Your name has been updated." });
+      setResultModal({ success: true, message: "Your nickname has been updated." });
       router.refresh();
     }
   }
@@ -102,7 +132,7 @@ export function MyPageClient({
         <button
           onClick={() => setShowPreview(true)}
           className="w-20 h-20 rounded-full bg-secondary border border-border overflow-hidden flex items-center justify-center focus:outline-none hover:opacity-80 transition-opacity"
-          aria-label="프로필 사진 보기"
+          aria-label="View profile picture"
         >
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
@@ -117,17 +147,52 @@ export function MyPageClient({
 
       {/* Form fields */}
       <div className="space-y-4">
+        {/* Name - read only */}
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Name</label>
-          <input
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+          <div className="w-full rounded-lg border border-border bg-secondary/40 px-3 py-2.5 text-sm text-muted-foreground">
+            {displayName || "—"}
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Shown to wishlist owners when you reserve a gift — except in Surprise Me mode.
+          </p>
         </div>
 
+        {/* Nickname - editable */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Nickname</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={nickname}
+              onChange={handleNicknameChange}
+              maxLength={20}
+              className="flex-1 rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <button
+              type="button"
+              onClick={handleCheck}
+              disabled={!isValidFormat || !nicknameChanged || checking}
+              className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium hover:bg-secondary transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              {checking ? "Checking…" : "Check"}
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            2–20 characters. Letters, numbers, and underscores only.
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            This is how you appear on your shared wishlists.
+          </p>
+          {checked === "available" && (
+            <p className="text-xs text-emerald-600 font-medium">✓ Available</p>
+          )}
+          {checked === "taken" && (
+            <p className="text-xs text-destructive font-medium">✗ Already taken</p>
+          )}
+        </div>
+
+        {/* Login Email - read only */}
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-foreground">Login Email</label>
           <div className="flex items-center gap-2 w-full rounded-lg border border-border bg-secondary/40 px-3 py-2.5">
@@ -144,8 +209,8 @@ export function MyPageClient({
 
       {/* Save button */}
       <button
-        onClick={handleSaveName}
-        disabled={saving || displayName.trim().length === 0}
+        onClick={handleSaveNickname}
+        disabled={!canSave || saving}
         className="w-full rounded-lg bg-emerald-600 text-white py-2.5 text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {saving ? "Saving..." : "Save"}
@@ -161,83 +226,71 @@ export function MyPageClient({
       />
 
       {/* Save result modal */}
-      {mounted &&
-        resultModal &&
-        createPortal(
-          <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-6">
-            <div className="bg-background rounded-2xl p-6 w-full max-w-xs shadow-xl space-y-4">
-              <p className="text-2xl">{resultModal.success ? "✅" : "⚠️"}</p>
-              <p className="font-semibold">
-                {resultModal.success ? "Updated" : "Update Failed"}
-              </p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {resultModal.message}
-              </p>
-              <button
-                onClick={() => setResultModal(null)}
-                className="w-full rounded-xl bg-emerald-600 text-white text-sm font-medium py-2.5 hover:bg-emerald-700 transition-colors"
-              >
-                OK
-              </button>
-            </div>
-          </div>,
-          document.body
-        )}
+      {mounted && resultModal && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-6">
+          <div className="bg-background rounded-2xl p-6 w-full max-w-xs shadow-xl space-y-4">
+            <p className="text-2xl">{resultModal.success ? "✅" : "⚠️"}</p>
+            <p className="font-semibold">{resultModal.success ? "Updated" : "Update Failed"}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{resultModal.message}</p>
+            <button
+              onClick={() => setResultModal(null)}
+              className="w-full rounded-xl bg-emerald-600 text-white text-sm font-medium py-2.5 hover:bg-emerald-700 transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Avatar preview modal */}
-      {mounted &&
-        showPreview &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-6"
-            onClick={() => !uploading && setShowPreview(false)}
-          >
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
-              <div className="w-72 h-72 rounded-2xl overflow-hidden bg-secondary border border-border/20">
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={displayName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-24 h-24 text-muted-foreground" />
-                  </div>
-                )}
-                {uploading && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-2xl">
-                    <p className="text-white text-sm font-medium">Uploading...</p>
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="absolute -top-3 -right-3 flex items-center gap-1 bg-emerald-600 text-white rounded-full px-3 py-1.5 text-xs font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-              >
-                <Camera className="w-3 h-3" />
-                Change
-              </button>
-
-              <button
-                onClick={() => !uploading && setShowPreview(false)}
-                disabled={uploading}
-                className="absolute -top-3 -left-3 bg-background border border-border rounded-full p-1.5 hover:bg-secondary transition-colors disabled:opacity-50 shadow-md"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-
-              {uploadError && (
-                <p className="absolute -bottom-8 left-0 right-0 text-center text-xs text-red-400">
-                  {uploadError}
-                </p>
+      {mounted && showPreview && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-6"
+          onClick={() => !uploading && setShowPreview(false)}
+        >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <div className="w-72 h-72 rounded-2xl overflow-hidden bg-secondary border border-border/20">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <User className="w-24 h-24 text-muted-foreground" />
+                </div>
+              )}
+              {uploading && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-2xl">
+                  <p className="text-white text-sm font-medium">Uploading...</p>
+                </div>
               )}
             </div>
-          </div>,
-          document.body
-        )}
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="absolute -top-3 -right-3 flex items-center gap-1 bg-emerald-600 text-white rounded-full px-3 py-1.5 text-xs font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+            >
+              <Camera className="w-3 h-3" />
+              Change
+            </button>
+
+            <button
+              onClick={() => !uploading && setShowPreview(false)}
+              disabled={uploading}
+              className="absolute -top-3 -left-3 bg-background border border-border rounded-full p-1.5 hover:bg-secondary transition-colors disabled:opacity-50 shadow-md"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+
+            {uploadError && (
+              <p className="absolute -bottom-8 left-0 right-0 text-center text-xs text-red-400">
+                {uploadError}
+              </p>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
