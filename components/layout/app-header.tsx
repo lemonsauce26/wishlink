@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
 import { MobileNav } from "@/components/layout/mobile-side-nav";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export async function AppHeader() {
@@ -13,10 +14,11 @@ export async function AppHeader() {
   if (user) {
     const { data: profile } = await supabaseAdmin
       .from("users")
-      .select("display_name, avatar_url")
+      .select("nickname, avatar_url")
       .eq("id", user.id)
       .single();
-    displayName = profile?.display_name ?? user.email ?? null;
+    if (!profile?.nickname) redirect("/setup/nickname");
+    displayName = profile?.nickname ?? user.email ?? null;
     avatarUrl = profile?.avatar_url ?? null;
   }
 

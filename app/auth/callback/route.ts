@@ -25,6 +25,7 @@ export async function GET(request: Request) {
           avatar_url: data.user.user_metadata?.avatar_url ?? null,
           provider: data.user.app_metadata?.provider ?? "google",
         });
+        return NextResponse.redirect(`${origin}/setup/nickname`);
       }
 
       return NextResponse.redirect(`${origin}/dashboard`);
