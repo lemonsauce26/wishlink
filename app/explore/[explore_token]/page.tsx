@@ -26,18 +26,31 @@ export default async function ExploreDetailPage({
 
   if (!wishlist) notFound();
 
-  const [{ data: ownerProfile }, { data: items }] = await Promise.all([
-    supabaseAdmin
-      .from("users")
-      .select("nickname, avatar_url")
-      .eq("id", wishlist.user_id)
-      .single(),
-    supabaseAdmin
-      .from("wish_items")
-      .select("id, title, image_url, price, currency, product_url, store_name")
-      .eq("wishlist_id", wishlist.id)
-      .order("created_at", { ascending: false }),
-  ]);
+  const [{ data: ownerProfile }, { data: items }, { count: likeCount }, { data: userLike }] =
+    await Promise.all([
+      supabaseAdmin
+        .from("users")
+        .select("nickname, avatar_url")
+        .eq("id", wishlist.user_id)
+        .single(),
+      supabaseAdmin
+        .from("wish_items")
+        .select("id, title, image_url, price, currency, product_url, store_name")
+        .eq("wishlist_id", wishlist.id)
+        .order("created_at", { ascending: false }),
+      supabaseAdmin
+        .from("wishlist_likes")
+        .select("id", { count: "exact", head: true })
+        .eq("wishlist_id", wishlist.id),
+      user
+        ? supabaseAdmin
+            .from("wishlist_likes")
+            .select("id")
+            .eq("wishlist_id", wishlist.id)
+            .eq("user_id", user.id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
 
   const emoji = EVENT_EMOJI[wishlist.event_type] ?? "🎁";
   const eventLabel = EVENT_INFOS.find((e) => e.value === wishlist.event_type)?.label ?? wishlist.event_type;
@@ -87,7 +100,12 @@ export default async function ExploreDetailPage({
           </p>
         </div>
 
-        <ExploreDetailClient isLoggedIn={!!user} />
+        <ExploreDetailClient
+          wishlistId={wishlist.id}
+          isLoggedIn={!!user}
+          initialLiked={!!userLike}
+          initialLikeCount={likeCount ?? 0}
+        />
 
         {allItems.length === 0 ? (
           <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">

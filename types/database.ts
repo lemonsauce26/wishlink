@@ -166,6 +166,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      wishlist_likes: {
+        Row: {
+          id: string;
+          wishlist_id: string;
+          user_id: string;
+          liked_at: string;
+        };
+        Insert: {
+          id?: string;
+          wishlist_id: string;
+          user_id: string;
+          liked_at?: string;
+        };
+        Update: {
+          liked_at?: string;
+        };
+        Relationships: [];
+      };
       wishitem_reservations: {
         Row: {
           id: string;
