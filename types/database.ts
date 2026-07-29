@@ -145,21 +145,21 @@ export type Database = {
         };
         Relationships: [];
       };
-      wishlist_follows: {
+      wishlist_visits: {
         Row: {
           id: string;
           wishlist_id: string;
           user_id: string;
-          followed_at: string;
+          visited_at: string;
         };
         Insert: {
           id?: string;
           wishlist_id: string;
           user_id: string;
-          followed_at?: string;
+          visited_at?: string;
         };
         Update: {
-          followed_at?: string;
+          visited_at?: string;
         };
         Relationships: [];
       };

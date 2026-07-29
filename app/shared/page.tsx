@@ -5,22 +5,22 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
 import { EVENT_EMOJI } from "@/lib/constants/event-infos";
 
-export default async function FollowingPage() {
+export default async function SharedPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login?next=/following");
+  if (!user) redirect("/auth/login?next=/shared");
 
-  const [{ data: inviteRows }, { data: followRows }] = await Promise.all([
+  const [{ data: inviteRows }, { data: visitRows }] = await Promise.all([
     supabaseAdmin
       .from("wishlist_invites")
       .select("wishlist_id")
       .eq("accepted_user_id", user.id)
       .eq("status", "accepted"),
     supabaseAdmin
-      .from("wishlist_follows")
+      .from("wishlist_visits")
       .select("wishlist_id")
       .eq("user_id", user.id),
   ]);
@@ -28,7 +28,7 @@ export default async function FollowingPage() {
   const allIds = [
     ...new Set([
       ...(inviteRows ?? []).map((r) => r.wishlist_id),
-      ...(followRows ?? []).map((r) => r.wishlist_id),
+      ...(visitRows ?? []).map((r) => r.wishlist_id),
     ]),
   ];
 
@@ -36,7 +36,7 @@ export default async function FollowingPage() {
     return (
       <AppShell>
         <main className="max-w-4xl mx-auto px-4 py-8">
-          <h1 className="text-xl font-bold mb-6">Following</h1>
+          <h1 className="text-xl font-bold mb-6">Shared</h1>
           <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">
             <p className="text-4xl">💝</p>
             <p className="font-medium">No wishlists yet</p>
@@ -68,7 +68,7 @@ export default async function FollowingPage() {
   return (
     <AppShell>
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-xl font-bold mb-6">Following</h1>
+        <h1 className="text-xl font-bold mb-6">Shared</h1>
 
         <div className="space-y-3">
           {(wishlists ?? []).map((wl) => {

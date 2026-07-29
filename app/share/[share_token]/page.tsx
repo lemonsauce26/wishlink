@@ -45,7 +45,7 @@ export default async function SharePage({ params }: { params: Promise<{ share_to
 
   if (user && !isOwner && wishlist.visibility === "public") {
     await supabaseAdmin
-      .from("wishlist_follows")
+      .from("wishlist_visits")
       .upsert(
         { wishlist_id: wishlist.id, user_id: user.id },
         { onConflict: "wishlist_id,user_id", ignoreDuplicates: true }
