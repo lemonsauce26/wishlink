@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { WishItemList } from "@/components/wishlist/wish-item-list";
 import { ShareButton } from "@/components/wishlist/share-button";
+import { ExploreButton } from "@/components/wishlist/explore-button";
 import { AppHeader } from "@/components/layout/app-header";
 import { getReservationCountMap } from "@/lib/reservations";
 import { EVENT_EMOJI } from "@/lib/constants/event-infos";
@@ -93,6 +94,11 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
               <ShareButton
                 wishlistId={wishlist.id}
                 shareToken={wishlist.share_token}
+                visibility={wishlist.visibility}
+              />
+              <ExploreButton
+                wishlistId={wishlist.id}
+                exploreToken={wishlist.explore_token}
                 visibility={wishlist.visibility}
               />
               {wishlist.visibility === "inner_circle" && (

@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, LayoutList, Inbox, Gift } from "lucide-react";
+import { LayoutDashboard, Star, Inbox, Gift, Compass } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/wishlists", icon: LayoutList, label: "My Wishlists" },
+  { href: "/wishlists", icon: Star, label: "My Wishlists" },
   { href: "/shared", icon: Inbox, label: "Shared" },
+  { href: "/explore", icon: Compass, label: "Explore" },
   { href: "/reservations", icon: Gift, label: "My Reservations" },
 ];
 
@@ -18,7 +19,7 @@ export function SideNav() {
     <aside className="hidden sm:flex flex-col fixed left-0 top-14 bottom-0 w-56 border-r border-border bg-background z-30">
       <nav className="p-3 space-y-1">
         {navItems.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href;
+          const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link
               key={href}
