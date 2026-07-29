@@ -41,6 +41,7 @@ export type Database = {
           event_date: string | null;
           visibility: "public" | "private" | "inner_circle";
           share_token: string;
+          explore_token: string | null;
           reservation_visibility: "surprise" | "show" | "verified";
           created_at: string;
           updated_at: string;
@@ -53,6 +54,7 @@ export type Database = {
           event_date?: string | null;
           visibility?: "public" | "private" | "inner_circle";
           share_token?: string;
+          explore_token?: string | null;
           reservation_visibility?: "surprise" | "show" | "verified";
           created_at?: string;
           updated_at?: string;
@@ -62,6 +64,7 @@ export type Database = {
           event_type?: string;
           event_date?: string | null;
           visibility?: "public" | "private" | "inner_circle";
+          explore_token?: string | null;
           reservation_visibility?: "surprise" | "show" | "verified";
           updated_at?: string;
         };
