@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { WishItemDetail } from "@/components/wishlist/wish-item-detail";
-import { AppHeader } from "@/components/layout/app-header";
+import { AppShell } from "@/components/layout/app-shell";
 
 export default async function ItemDetailPage({
   params,
@@ -34,12 +34,10 @@ export default async function ItemDetailPage({
   const isOwner = wishlist.user_id === user.id;
 
   return (
-    <div className="min-h-dvh bg-background">
-      <AppHeader />
-
+    <AppShell>
       <main className="max-w-2xl mx-auto px-4 py-8">
         <WishItemDetail item={item} wishlistId={id} isOwner={isOwner} />
       </main>
-    </div>
+    </AppShell>
   );
 }

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { InnerCircleClient } from "./inner-circle-client";
-import { AppHeader } from "@/components/layout/app-header";
+import { AppShell } from "@/components/layout/app-shell";
 
 export default async function InnerCirclePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,9 +30,7 @@ export default async function InnerCirclePage({ params }: { params: Promise<{ id
   const cancelled = allInvites.filter((i) => i.status === "cancelled");
 
   return (
-    <div className="min-h-dvh bg-background">
-      <AppHeader />
-
+    <AppShell>
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-2">
         <h1 className="text-2xl font-bold">✨ Inner Circle</h1>
         <p className="text-sm text-muted-foreground pb-4">
@@ -46,6 +44,6 @@ export default async function InnerCirclePage({ params }: { params: Promise<{ id
           initialCancelled={cancelled}
         />
       </main>
-    </div>
+    </AppShell>
   );
 }

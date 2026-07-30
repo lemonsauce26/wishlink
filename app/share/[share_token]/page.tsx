@@ -5,7 +5,7 @@ import { getReservationCountMap } from "@/lib/reservations";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ShareItemList } from "@/components/wishlist/share-item-list";
-import { AppHeader } from "@/components/layout/app-header";
+import { AppShell } from "@/components/layout/app-shell";
 import { EVENT_EMOJI } from "@/lib/constants/event-infos";
 
 export default async function SharePage({ params }: { params: Promise<{ share_token: string }> }) {
@@ -25,8 +25,7 @@ export default async function SharePage({ params }: { params: Promise<{ share_to
     }
     if (result.reason === "forbidden") {
       return (
-        <div className="min-h-dvh bg-background">
-          <AppHeader />
+        <AppShell>
           <main className="max-w-4xl mx-auto px-4 py-24 text-center space-y-3">
             <p className="text-4xl">🔍</p>
             <p className="font-medium">This page is not available</p>
@@ -34,7 +33,7 @@ export default async function SharePage({ params }: { params: Promise<{ share_to
               This page is currently not available.
             </p>
           </main>
-        </div>
+        </AppShell>
       );
     }
     notFound();
@@ -122,8 +121,7 @@ export default async function SharePage({ params }: { params: Promise<{ share_to
     : null;
 
   return (
-    <div className="min-h-dvh bg-background">
-      <AppHeader />
+    <AppShell>
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         <div className="space-y-2">
           <h1 className="text-2xl font-bold">
@@ -186,6 +184,6 @@ export default async function SharePage({ params }: { params: Promise<{ share_to
           </Link>
         </p>
       </main>
-    </div>
+    </AppShell>
   );
 }

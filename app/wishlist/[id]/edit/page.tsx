@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { WishlistForm } from "@/components/wishlist/wishlist-form";
-import { AppHeader } from "@/components/layout/app-header";
+import { AppShell } from "@/components/layout/app-shell";
 
 export default async function EditWishlistPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,9 +20,7 @@ export default async function EditWishlistPage({ params }: { params: Promise<{ i
   if (!wishlist) notFound();
 
   return (
-    <div className="min-h-dvh bg-background">
-      <AppHeader />
-
+    <AppShell>
       <div className="max-w-lg mx-auto px-4 py-10">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Edit Wishlist</h1>
@@ -39,6 +37,6 @@ export default async function EditWishlistPage({ params }: { params: Promise<{ i
           }}
         />
       </div>
-    </div>
+    </AppShell>
   );
 }

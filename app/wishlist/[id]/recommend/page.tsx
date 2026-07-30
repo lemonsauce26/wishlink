@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { AiRecommendClient } from "@/components/wishlist/ai-recommend-client";
-import { AppHeader } from "@/components/layout/app-header";
+import { AppShell } from "@/components/layout/app-shell";
 
 export default async function RecommendPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,9 +20,7 @@ export default async function RecommendPage({ params }: { params: Promise<{ id: 
   if (!wishlist) notFound();
 
   return (
-    <div className="min-h-dvh bg-background">
-      <AppHeader />
-
+    <AppShell>
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">✨ AI Gift Ideas</h1>
@@ -33,6 +31,6 @@ export default async function RecommendPage({ params }: { params: Promise<{ id: 
 
         <AiRecommendClient wishlistId={id} wishlistTitle={wishlist.title} />
       </main>
-    </div>
+    </AppShell>
   );
 }

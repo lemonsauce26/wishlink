@@ -21,13 +21,13 @@ export async function AppHeader() {
   }
 
   return (
-    <header className="border-b border-border">
-      <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <header className="border-b border-border bg-background">
+      <div className="h-14 flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:w-56 px-4 shrink-0">
           <MobileNav />
           <Link href="/dashboard" className="text-sm font-medium">WishLink</Link>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 px-4">
           {user ? (
             <HeaderUserMenu displayName={displayName ?? ""} avatarUrl={avatarUrl} />
           ) : (

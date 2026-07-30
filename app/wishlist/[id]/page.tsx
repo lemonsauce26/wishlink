@@ -4,7 +4,7 @@ import Link from "next/link";
 import { WishItemList } from "@/components/wishlist/wish-item-list";
 import { ShareButton } from "@/components/wishlist/share-button";
 import { ExploreButton } from "@/components/wishlist/explore-button";
-import { AppHeader } from "@/components/layout/app-header";
+import { AppShell } from "@/components/layout/app-shell";
 import { getReservationCountMap } from "@/lib/reservations";
 import { EVENT_EMOJI } from "@/lib/constants/event-infos";
 
@@ -30,19 +30,21 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
 
   if (!wishlist) {
     return (
-      <div className="min-h-dvh bg-background flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <p className="text-4xl">🔒</p>
-          <p className="font-medium">This wishlist is private</p>
-          <p className="text-sm text-muted-foreground">You don't have access to this wishlist.</p>
-          <Link
-            href="/dashboard"
-            className="inline-block mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← Back to Dashboard
-          </Link>
+      <AppShell>
+        <div className="flex min-h-[calc(100dvh-3.5rem)] items-center justify-center">
+          <div className="text-center space-y-3">
+            <p className="text-4xl">🔒</p>
+            <p className="font-medium">This wishlist is private</p>
+            <p className="text-sm text-muted-foreground">You don't have access to this wishlist.</p>
+            <Link
+              href="/dashboard"
+              className="inline-block mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← Back to Dashboard
+            </Link>
+          </div>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
@@ -68,9 +70,7 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
     : null;
 
   return (
-    <div className="min-h-dvh bg-background">
-      <AppHeader />
-
+    <AppShell>
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -131,6 +131,6 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
           <WishItemList items={items ?? []} wishlistId={wishlist.id} isOwner={isOwner} reservationCountMap={reservationCountMap} reservationVisibility={wishlist.reservation_visibility} />
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }
