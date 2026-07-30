@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { ExploreDetailClient } from "@/components/explore/explore-detail-client";
+import { SaveItemButton } from "@/components/explore/save-item-button";
 import { EVENT_EMOJI, EVENT_INFOS } from "@/lib/constants/event-infos";
 import Link from "next/link";
 
@@ -161,6 +162,7 @@ export default async function ExploreDetailPage({
                     </a>
                   )}
                 </div>
+                <SaveItemButton itemId={item.id} isLoggedIn={!!user} />
               </div>
             ))}
           </div>

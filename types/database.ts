@@ -184,6 +184,23 @@ export type Database = {
         };
         Relationships: [];
       };
+      wishlist_stats: {
+        Row: {
+          wishlist_id: string;
+          copy_count: number;
+          item_save_count: number;
+        };
+        Insert: {
+          wishlist_id: string;
+          copy_count?: number;
+          item_save_count?: number;
+        };
+        Update: {
+          copy_count?: number;
+          item_save_count?: number;
+        };
+        Relationships: [];
+      };
       wishitem_reservations: {
         Row: {
           id: string;
