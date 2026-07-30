@@ -35,17 +35,22 @@ export function ExploreCard({
   const eventLabel = EVENT_INFOS.find((e) => e.value === wishlist.event_type)?.label ?? wishlist.event_type;
 
   return (
-    <Link
-      href={`/explore/${wishlist.explore_token}`}
-      className="block rounded-xl border border-border p-4 hover:bg-secondary/40 transition-colors space-y-3"
-    >
+    <div className="rounded-xl border border-border p-4 hover:bg-secondary/40 transition-colors space-y-3">
       <div>
-        <p className="font-semibold">
+        <Link
+          href={`/explore/${wishlist.explore_token}`}
+          className="block font-semibold hover:underline underline-offset-2"
+        >
           {emoji} {wishlist.title}
-        </p>
+        </Link>
         <div className="flex items-center gap-2 mt-0.5 min-w-0">
           <div className="flex items-center gap-1 flex-1 min-w-0 text-xs text-muted-foreground overflow-hidden">
-            <span className="truncate shrink min-w-0">@{nickname || "—"}</span>
+            <Link
+              href={`/explore/user/${nickname}`}
+              className="truncate shrink min-w-0 hover:underline underline-offset-2"
+            >
+              @{nickname || "—"}
+            </Link>
             <span className="shrink-0 text-muted-foreground/40">·</span>
             <span className="flex items-center gap-0.5 shrink-0"><Package className="w-3 h-3" />{itemCount}<span className="hidden sm:inline">&nbsp;items</span></span>
             <span className="shrink-0 text-muted-foreground/40">·</span>
@@ -61,29 +66,31 @@ export function ExploreCard({
         </div>
       </div>
 
-      {previewItems.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
-          {previewItems.map((item) => (
-            <div
-              key={item.id}
-              className="aspect-square rounded-lg overflow-hidden bg-secondary border border-border"
-            >
-              {item.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={item.image_url}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px] px-1 text-center leading-tight">
-                  {item.title}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </Link>
+      <Link href={`/explore/${wishlist.explore_token}`} className="block">
+        {previewItems.length > 0 && (
+          <div className="grid grid-cols-3 gap-2">
+            {previewItems.map((item) => (
+              <div
+                key={item.id}
+                className="aspect-square rounded-lg overflow-hidden bg-secondary border border-border"
+              >
+                {item.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px] px-1 text-center leading-tight">
+                    {item.title}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Link>
+    </div>
   );
 }

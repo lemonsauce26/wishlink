@@ -77,17 +77,40 @@ export default async function SharePage({ params }: { params: Promise<{ share_to
   }
 
   let currentUser: { name: string; email: string } | null = null;
+  let ownerProfile: { display_name: string | null; avatar_url: string | null } | null = null;
+
+  const fetches: Promise<void>[] = [];
+
   if (user) {
-    const { data: profile } = await supabaseAdmin
-      .from("users")
-      .select("display_name, email")
-      .eq("id", user.id)
-      .single();
-    currentUser = {
-      name: profile?.display_name ?? profile?.email ?? user.email!,
-      email: profile?.email ?? user.email!,
-    };
+    fetches.push(
+      supabaseAdmin
+        .from("users")
+        .select("display_name, email")
+        .eq("id", user.id)
+        .single()
+        .then(({ data: profile }) => {
+          currentUser = {
+            name: profile?.display_name ?? profile?.email ?? user.email!,
+            email: profile?.email ?? user.email!,
+          };
+        })
+    );
   }
+
+  if (!isOwner) {
+    fetches.push(
+      supabaseAdmin
+        .from("users")
+        .select("display_name, avatar_url")
+        .eq("id", wishlist.user_id)
+        .single()
+        .then(({ data }) => {
+          ownerProfile = data;
+        })
+    );
+  }
+
+  await Promise.all(fetches);
 
   const emoji = EVENT_EMOJI[wishlist.event_type] ?? "🎁";
   const date = wishlist.event_date
@@ -102,11 +125,38 @@ export default async function SharePage({ params }: { params: Promise<{ share_to
     <div className="min-h-dvh bg-background">
       <AppHeader />
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-2xl font-bold">
             {emoji} {wishlist.title}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          {ownerProfile && (
+            <Link
+              href={`/profile/via/${share_token}`}
+              className="inline-flex items-center gap-2 group"
+            >
+              <div
+                className="rounded-full overflow-hidden bg-secondary border border-border shrink-0"
+                style={{ width: 28, height: 28 }}
+              >
+                {ownerProfile.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={ownerProfile.avatar_url}
+                    alt=""
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
+                    {(ownerProfile.display_name ?? "?")[0].toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <span className="text-sm font-semibold text-foreground group-hover:underline underline-offset-2">
+                {ownerProfile.display_name ?? "Unknown"}
+              </span>
+            </Link>
+          )}
+          <p className="text-sm text-muted-foreground">
             {date && `${date} · `}
             {allItems.length} items
           </p>

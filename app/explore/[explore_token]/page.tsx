@@ -78,23 +78,28 @@ export default async function ExploreDetailPage({
           </h1>
 
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full overflow-hidden bg-secondary border border-border shrink-0">
-              {ownerProfile?.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={ownerProfile.avatar_url}
-                  alt={ownerProfile.nickname ?? ""}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
-                  {(ownerProfile?.nickname ?? "?")[0].toUpperCase()}
-                </div>
-              )}
-            </div>
-            <span className="text-sm font-semibold text-foreground">
-              @{ownerProfile?.nickname || "—"}
-            </span>
+            <Link
+              href={`/explore/user/${ownerProfile?.nickname ?? ""}`}
+              className="flex items-center gap-2 group"
+            >
+              <div className="w-7 h-7 rounded-full overflow-hidden bg-secondary border border-border shrink-0">
+                {ownerProfile?.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={ownerProfile.avatar_url}
+                    alt={ownerProfile.nickname ?? ""}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
+                    {(ownerProfile?.nickname ?? "?")[0].toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <span className="text-sm font-semibold text-foreground group-hover:underline underline-offset-2">
+                @{ownerProfile?.nickname || "—"}
+              </span>
+            </Link>
             <span className="ml-auto text-xs bg-secondary border border-border rounded-full px-2.5 py-1 text-muted-foreground whitespace-nowrap">
               {emoji} {eventLabel}
             </span>
