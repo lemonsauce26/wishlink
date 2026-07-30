@@ -79,6 +79,25 @@ export default async function ExplorePage({
     }
   }
 
+  const [{ data: allLikes }, { data: allStats }] =
+    wishlistIds.length > 0
+      ? await Promise.all([
+          supabaseAdmin.from("wishlist_likes").select("wishlist_id").in("wishlist_id", wishlistIds),
+          supabaseAdmin
+            .from("wishlist_stats")
+            .select("wishlist_id, copy_count, item_save_count")
+            .in("wishlist_id", wishlistIds),
+        ])
+      : [{ data: [] }, { data: [] }];
+
+  const likeCountMap: Record<string, number> = {};
+  for (const like of allLikes ?? []) {
+    likeCountMap[like.wishlist_id] = (likeCountMap[like.wishlist_id] ?? 0) + 1;
+  }
+  const statsMap = Object.fromEntries(
+    (allStats ?? []).map((s) => [s.wishlist_id, s])
+  );
+
   return (
     <AppShell>
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -124,6 +143,9 @@ export default async function ExplorePage({
                 nickname={nicknameMap[wl.user_id] ?? ""}
                 itemCount={itemCountMap[wl.id] ?? 0}
                 previewItems={previewMap[wl.id] ?? []}
+                likeCount={likeCountMap[wl.id] ?? 0}
+                saveCount={statsMap[wl.id]?.item_save_count ?? 0}
+                copyCount={statsMap[wl.id]?.copy_count ?? 0}
               />
             ))}
           </div>

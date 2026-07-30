@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Heart, Bookmark, Copy, Package } from "lucide-react";
 import { EVENT_EMOJI, EVENT_INFOS } from "@/lib/constants/event-infos";
 
 interface PreviewItem {
@@ -16,6 +17,9 @@ interface ExploreCardProps {
   nickname: string;
   itemCount: number;
   previewItems: PreviewItem[];
+  likeCount: number;
+  saveCount: number;
+  copyCount: number;
 }
 
 export function ExploreCard({
@@ -23,6 +27,9 @@ export function ExploreCard({
   nickname,
   itemCount,
   previewItems,
+  likeCount,
+  saveCount,
+  copyCount,
 }: ExploreCardProps) {
   const emoji = EVENT_EMOJI[wishlist.event_type] ?? "🎁";
   const eventLabel = EVENT_INFOS.find((e) => e.value === wishlist.event_type)?.label ?? wishlist.event_type;
@@ -36,11 +43,19 @@ export function ExploreCard({
         <p className="font-semibold">
           {emoji} {wishlist.title}
         </p>
-        <div className="flex items-center mt-0.5">
-          <p className="text-xs text-muted-foreground">
-            @{nickname || "—"} · {itemCount} items
-          </p>
-          <span className="ml-auto text-xs bg-secondary border border-border rounded-full px-2.5 py-1 text-muted-foreground whitespace-nowrap">
+        <div className="flex items-center gap-2 mt-0.5 min-w-0">
+          <div className="flex items-center gap-1 flex-1 min-w-0 text-xs text-muted-foreground overflow-hidden">
+            <span className="truncate shrink min-w-0">@{nickname || "—"}</span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <span className="flex items-center gap-0.5 shrink-0"><Package className="w-3 h-3" />{itemCount}<span className="hidden sm:inline">&nbsp;items</span></span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <span className="flex items-center gap-0.5 shrink-0"><Heart className="w-3 h-3" />{likeCount}<span className="hidden sm:inline">&nbsp;likes</span></span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <span className="flex items-center gap-0.5 shrink-0"><Bookmark className="w-3 h-3" />{saveCount}<span className="hidden sm:inline">&nbsp;saved items</span></span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <span className="flex items-center gap-0.5 shrink-0"><Copy className="w-3 h-3" />{copyCount}<span className="hidden sm:inline">&nbsp;copies</span></span>
+          </div>
+          <span className="text-xs bg-secondary border border-border rounded-full px-2.5 py-1 text-muted-foreground whitespace-nowrap shrink-0">
             {emoji} {eventLabel}
           </span>
         </div>
