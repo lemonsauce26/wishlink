@@ -2,26 +2,33 @@
 
 import { useState } from "react";
 import { LoginRequiredModal } from "@/components/explore/login-required-modal";
+import { CopyWishlistModal } from "@/components/explore/copy-wishlist-modal";
 
 export function ExploreDetailClient({
   wishlistId,
+  wishlistTitle,
   isLoggedIn,
   initialLiked,
   initialLikeCount,
+  initialCopyCount,
 }: {
   wishlistId: string;
+  wishlistTitle: string;
   isLoggedIn: boolean;
   initialLiked: boolean;
   initialLikeCount: number;
+  initialCopyCount: number;
 }) {
-  const [showModal, setShowModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCopyModal, setShowCopyModal] = useState(false);
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
+  const [copyCount, setCopyCount] = useState(initialCopyCount);
   const [loading, setLoading] = useState(false);
 
   async function handleLike() {
     if (!isLoggedIn) {
-      setShowModal(true);
+      setShowLoginModal(true);
       return;
     }
     if (loading) return;
@@ -43,11 +50,13 @@ export function ExploreDetailClient({
     setLoading(false);
   }
 
-  function handleCopy() {
+  function handleCopy(e: React.MouseEvent) {
+    (e.currentTarget as HTMLButtonElement).blur();
     if (!isLoggedIn) {
-      setShowModal(true);
+      setShowLoginModal(true);
+      return;
     }
-    // 8-4 implementation
+    setShowCopyModal(true);
   }
 
   return (
@@ -68,10 +77,18 @@ export function ExploreDetailClient({
           onClick={handleCopy}
           className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
         >
-          🔖 Copy Wishlist
+          🔖 Copy Wishlist {copyCount}
         </button>
       </div>
-      {showModal && <LoginRequiredModal onClose={() => setShowModal(false)} />}
+      {showLoginModal && <LoginRequiredModal onClose={() => setShowLoginModal(false)} />}
+      {showCopyModal && (
+        <CopyWishlistModal
+          wishlistId={wishlistId}
+          wishlistTitle={wishlistTitle}
+          onClose={() => setShowCopyModal(false)}
+          onCopied={() => setCopyCount((c) => c + 1)}
+        />
+      )}
     </>
   );
 }

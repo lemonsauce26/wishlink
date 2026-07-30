@@ -27,7 +27,7 @@ export default async function ExploreDetailPage({
 
   if (!wishlist) notFound();
 
-  const [{ data: ownerProfile }, { data: items }, { count: likeCount }, { data: userLike }] =
+  const [{ data: ownerProfile }, { data: items }, { count: likeCount }, { data: userLike }, { data: stats }] =
     await Promise.all([
       supabaseAdmin
         .from("users")
@@ -51,6 +51,11 @@ export default async function ExploreDetailPage({
             .eq("user_id", user.id)
             .maybeSingle()
         : Promise.resolve({ data: null }),
+      supabaseAdmin
+        .from("wishlist_stats")
+        .select("copy_count")
+        .eq("wishlist_id", wishlist.id)
+        .maybeSingle(),
     ]);
 
   const emoji = EVENT_EMOJI[wishlist.event_type] ?? "🎁";
@@ -103,9 +108,11 @@ export default async function ExploreDetailPage({
 
         <ExploreDetailClient
           wishlistId={wishlist.id}
+          wishlistTitle={wishlist.title}
           isLoggedIn={!!user}
           initialLiked={!!userLike}
           initialLikeCount={likeCount ?? 0}
+          initialCopyCount={stats?.copy_count ?? 0}
         />
 
         {allItems.length === 0 ? (
