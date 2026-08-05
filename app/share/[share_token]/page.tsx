@@ -75,41 +75,23 @@ export default async function SharePage({ params }: { params: Promise<{ share_to
     }
   }
 
-  let currentUser: { name: string; email: string } | null = null;
-  let ownerProfile: { display_name: string | null; avatar_url: string | null } | null = null;
+  const [{ data: currentUserProfile }, { data: ownerProfileData }] = await Promise.all([
+    user
+      ? supabaseAdmin.from("users").select("display_name, email").eq("id", user.id).single()
+      : Promise.resolve({ data: null }),
+    !isOwner
+      ? supabaseAdmin.from("users").select("display_name, avatar_url").eq("id", wishlist.user_id).single()
+      : Promise.resolve({ data: null }),
+  ]);
 
-  const fetches: Promise<void>[] = [];
+  const currentUser = currentUserProfile
+    ? {
+        name: currentUserProfile.display_name ?? currentUserProfile.email ?? user!.email!,
+        email: currentUserProfile.email ?? user!.email!,
+      }
+    : null;
 
-  if (user) {
-    fetches.push(
-      supabaseAdmin
-        .from("users")
-        .select("display_name, email")
-        .eq("id", user.id)
-        .single()
-        .then(({ data: profile }) => {
-          currentUser = {
-            name: profile?.display_name ?? profile?.email ?? user.email!,
-            email: profile?.email ?? user.email!,
-          };
-        })
-    );
-  }
-
-  if (!isOwner) {
-    fetches.push(
-      supabaseAdmin
-        .from("users")
-        .select("display_name, avatar_url")
-        .eq("id", wishlist.user_id)
-        .single()
-        .then(({ data }) => {
-          ownerProfile = data;
-        })
-    );
-  }
-
-  await Promise.all(fetches);
+  const ownerProfile = ownerProfileData as { display_name: string | null; avatar_url: string | null } | null;
 
   const emoji = EVENT_EMOJI[wishlist.event_type] ?? "🎁";
   const date = wishlist.event_date

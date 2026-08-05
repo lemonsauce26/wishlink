@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { ExploreDetailClient } from "@/components/explore/explore-detail-client";
 import { SaveItemButton } from "@/components/explore/save-item-button";
+import { LikeItemButton } from "@/components/explore/like-item-button";
 import { EVENT_EMOJI, EVENT_INFOS } from "@/lib/constants/event-infos";
 import Link from "next/link";
 
@@ -58,6 +59,20 @@ export default async function ExploreDetailPage({
         .maybeSingle(),
     ]);
 
+  const allItems = items ?? [];
+  const itemIds = allItems.map((i) => i.id);
+
+  const { data: likedItemRows } =
+    user && itemIds.length > 0
+      ? await supabaseAdmin
+          .from("wishitem_likes")
+          .select("wish_item_id")
+          .eq("user_id", user.id)
+          .in("wish_item_id", itemIds)
+      : { data: [] as { wish_item_id: string }[] };
+
+  const likedItemIds = new Set((likedItemRows ?? []).map((r) => r.wish_item_id));
+
   const emoji = EVENT_EMOJI[wishlist.event_type] ?? "🎁";
   const eventLabel = EVENT_INFOS.find((e) => e.value === wishlist.event_type)?.label ?? wishlist.event_type;
   const date = wishlist.event_date
@@ -67,7 +82,6 @@ export default async function ExploreDetailPage({
         year: "numeric",
       })
     : null;
-  const allItems = items ?? [];
 
   return (
     <AppShell>
@@ -174,6 +188,7 @@ export default async function ExploreDetailPage({
                     </a>
                   )}
                 </div>
+                <LikeItemButton itemId={item.id} isLoggedIn={!!user} initialLiked={likedItemIds.has(item.id)} />
                 <SaveItemButton itemId={item.id} isLoggedIn={!!user} />
               </div>
             ))}

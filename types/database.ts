@@ -219,6 +219,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      wishitem_likes: {
+        Row: {
+          id: string;
+          wish_item_id: string;
+          user_id: string;
+          liked_at: string;
+        };
+        Insert: {
+          id?: string;
+          wish_item_id: string;
+          user_id: string;
+          liked_at?: string;
+        };
+        Update: {
+          liked_at?: string;
+        };
+        Relationships: [];
+      };
       wishitem_reservations: {
         Row: {
           id: string;
