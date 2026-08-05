@@ -50,7 +50,8 @@ export default async function LikedPage() {
 
   const ownerMap = new Map((wishlistOwners ?? []).map((u) => [u.id, u.nickname]));
   const wishlistMap = new Map((wishlists ?? []).map((w) => [w.id, w]));
-  const sortedWishlists = wishlistIds.map((id) => wishlistMap.get(id)).filter(Boolean) as typeof wishlists;
+  const sortedWishlists = (wishlistIds.map((id) => wishlistMap.get(id)).filter(Boolean) as NonNullable<typeof wishlists>);
+  const previewWishlists = sortedWishlists.slice(0, 3);
 
   // --- Liked Items ---
   const itemIds = (likedItemRows ?? []).map((r) => r.wish_item_id);
@@ -82,10 +83,17 @@ export default async function LikedPage() {
 
         {/* Liked Wishlists */}
         <section className="space-y-4">
-          <h2 className="text-base font-semibold text-muted-foreground uppercase tracking-wide text-xs">
-            Wishlists
-          </h2>
-          {(sortedWishlists ?? []).length === 0 ? (
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Wishlists
+            </h2>
+            {sortedWishlists.length > 0 && (
+              <Link href="/liked/wishlists" className="text-xs text-emerald-600 hover:underline">
+                View all →
+              </Link>
+            )}
+          </div>
+          {previewWishlists.length === 0 ? (
             <div className="rounded-xl border border-border p-8 text-center text-muted-foreground space-y-2">
               <p className="text-3xl">🎁</p>
               <p className="text-sm">No liked wishlists yet.</p>
@@ -95,7 +103,7 @@ export default async function LikedPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {(sortedWishlists ?? []).map((w) => {
+              {previewWishlists.map((w) => {
                 const emoji = EVENT_EMOJI[w.event_type] ?? "🎁";
                 const href = w.explore_token ? `/explore/${w.explore_token}` : null;
                 const nickname = ownerMap.get(w.user_id);
@@ -118,6 +126,14 @@ export default async function LikedPage() {
                   <div key={w.id}>{inner}</div>
                 );
               })}
+              {sortedWishlists.length > 3 && (
+                <Link
+                  href="/liked/wishlists"
+                  className="flex items-center justify-center rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                >
+                  View all {sortedWishlists.length} wishlists →
+                </Link>
+              )}
             </div>
           )}
         </section>
