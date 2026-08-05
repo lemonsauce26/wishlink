@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Star, Inbox, Gift, Compass } from "lucide-react";
+import { LayoutDashboard, Star, Inbox, Gift, Compass, Users } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/wishlists", icon: Star, label: "My Wishlists" },
   { href: "/shared", icon: Inbox, label: "Shared" },
   { href: "/explore", icon: Compass, label: "Explore" },
+  { href: "/following", icon: Users, label: "Following" },
   { href: "/reservations", icon: Gift, label: "My Reservations" },
 ];
 

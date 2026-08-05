@@ -201,6 +201,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      follows: {
+        Row: {
+          id: string;
+          follower_id: string;
+          followee_id: string;
+          followed_at: string;
+        };
+        Insert: {
+          id?: string;
+          follower_id: string;
+          followee_id: string;
+          followed_at?: string;
+        };
+        Update: {
+          followed_at?: string;
+        };
+        Relationships: [];
+      };
       wishitem_reservations: {
         Row: {
           id: string;

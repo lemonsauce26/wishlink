@@ -1,7 +1,9 @@
+import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { ExploreCard } from "@/components/explore/explore-card";
+import { FollowButton } from "@/components/follow/follow-button";
 import Link from "next/link";
 
 export default async function ExploreUserPage({
@@ -12,6 +14,9 @@ export default async function ExploreUserPage({
   const { nickname } = await params;
   const decodedNickname = decodeURIComponent(nickname);
 
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { data: owner } = await supabaseAdmin
     .from("users")
     .select("id, avatar_url")
@@ -20,12 +25,30 @@ export default async function ExploreUserPage({
 
   if (!owner) notFound();
 
-  const { data: wishlists } = await supabaseAdmin
-    .from("wishlists")
-    .select("id, title, event_type, explore_token")
-    .eq("user_id", owner.id)
-    .not("explore_token", "is", null)
-    .order("updated_at", { ascending: false });
+  const [
+    { data: wishlists },
+    { count: followerCount },
+    existingFollow,
+  ] = await Promise.all([
+    supabaseAdmin
+      .from("wishlists")
+      .select("id, title, event_type, explore_token")
+      .eq("user_id", owner.id)
+      .not("explore_token", "is", null)
+      .order("updated_at", { ascending: false }),
+    supabaseAdmin
+      .from("follows")
+      .select("id", { count: "exact", head: true })
+      .eq("followee_id", owner.id),
+    user && user.id !== owner.id
+      ? supabaseAdmin
+          .from("follows")
+          .select("id")
+          .eq("follower_id", user.id)
+          .eq("followee_id", owner.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
   const allWishlists = wishlists ?? [];
   const wishlistIds = allWishlists.map((w) => w.id);
@@ -66,10 +89,13 @@ export default async function ExploreUserPage({
   }
   const statsMap = Object.fromEntries((allStats ?? []).map((s) => [s.wishlist_id, s]));
 
+  const isOwnProfile = user?.id === owner.id;
+  const isFollowing = !!existingFollow.data;
+
   return (
     <AppShell>
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           <div className="rounded-full overflow-hidden bg-secondary border border-border shrink-0" style={{ width: 48, height: 48 }}>
             {owner.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -80,10 +106,23 @@ export default async function ExploreUserPage({
               </div>
             )}
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="font-semibold text-lg">@{decodedNickname}</p>
             <p className="text-sm text-muted-foreground">{allWishlists.length} wishlists on Explore</p>
           </div>
+          {!isOwnProfile && (
+            <div className="flex items-center gap-2 shrink-0">
+              <FollowButton
+                nickname={decodedNickname}
+                isLoggedIn={!!user}
+                initialFollowing={isFollowing}
+                initialCount={followerCount ?? 0}
+              />
+            </div>
+          )}
+          {isOwnProfile && followerCount != null && followerCount > 0 && (
+            <span className="text-sm text-muted-foreground shrink-0">{followerCount} followers</span>
+          )}
         </div>
 
         {allWishlists.length === 0 ? (
