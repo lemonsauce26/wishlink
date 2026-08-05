@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { EVENT_EMOJI } from "@/lib/constants/event-infos";
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 
 export default async function LikedPage() {
   const supabase = await createClient();
@@ -74,7 +75,8 @@ export default async function LikedPage() {
 
   const exploreTokenMap = new Map((itemWishlists ?? []).map((w) => [w.id, w.explore_token]));
   const itemMap = new Map((items ?? []).map((i) => [i.id, i]));
-  const sortedItems = itemIds.map((id) => itemMap.get(id)).filter(Boolean) as typeof items;
+  const sortedItems = (itemIds.map((id) => itemMap.get(id)).filter(Boolean) as NonNullable<typeof items>);
+  const previewItems = sortedItems.slice(0, 3);
 
   return (
     <AppShell>
@@ -140,10 +142,17 @@ export default async function LikedPage() {
 
         {/* Liked Items */}
         <section className="space-y-4">
-          <h2 className="text-base font-semibold text-muted-foreground uppercase tracking-wide text-xs">
-            Items
-          </h2>
-          {(sortedItems ?? []).length === 0 ? (
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Wish Items
+            </h2>
+            {sortedItems.length > 0 && (
+              <Link href="/liked/wishitems" className="text-xs text-emerald-600 hover:underline">
+                View all →
+              </Link>
+            )}
+          </div>
+          {previewItems.length === 0 ? (
             <div className="rounded-xl border border-border p-8 text-center text-muted-foreground space-y-2">
               <p className="text-3xl">❤️</p>
               <p className="text-sm">No liked items yet.</p>
@@ -153,11 +162,14 @@ export default async function LikedPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {(sortedItems ?? []).map((item) => {
+              {previewItems.map((item) => {
                 const token = exploreTokenMap.get(item.wishlist_id);
-                const href = token ? `/explore/${token}` : null;
-                const inner = (
-                  <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3 hover:bg-secondary transition-colors">
+                const exploreHref = token ? `/explore/${token}` : null;
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 rounded-xl border border-border px-4 py-3"
+                  >
                     {item.image_url && (
                       <div className="w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-secondary">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -179,16 +191,26 @@ export default async function LikedPage() {
                         <p className="text-xs text-muted-foreground">{item.store_name}</p>
                       )}
                     </div>
+                    {exploreHref && (
+                      <Link
+                        href={exploreHref}
+                        className="shrink-0 p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                        title="위시리스트 보기"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Link>
+                    )}
                   </div>
                 );
-                return href ? (
-                  <Link key={item.id} href={href}>
-                    {inner}
-                  </Link>
-                ) : (
-                  <div key={item.id}>{inner}</div>
-                );
               })}
+              {sortedItems.length > 3 && (
+                <Link
+                  href="/liked/wishitems"
+                  className="flex items-center justify-center rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                >
+                  View all wish items →
+                </Link>
+              )}
             </div>
           )}
         </section>
