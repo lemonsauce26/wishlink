@@ -182,7 +182,7 @@ export function MyPageClient({
             2–20 characters. Letters, numbers, and underscores only.
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            This is how you appear on your shared wishlists.
+            This is how you appear in Explore and to your followers.
           </p>
           {checked === "available" && (
             <p className="text-xs text-emerald-600 font-medium">✓ Available</p>
