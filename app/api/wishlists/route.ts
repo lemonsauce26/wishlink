@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { generateUniqueToken } from "@/lib/tokens";
 
 const VALID_SORT = ["created_at", "updated_at", "title", "event_date"] as const;
 type SortColumn = (typeof VALID_SORT)[number];
@@ -35,9 +36,10 @@ export async function POST(req: NextRequest) {
   const { title, event_type, event_date, visibility, reservation_visibility } = body;
 
   const now = new Date().toISOString();
+  const share_token = await generateUniqueToken("share_token");
   const { data, error } = await supabaseAdmin
     .from("wishlists")
-    .insert({ title, event_type, event_date: event_date || null, visibility, reservation_visibility, user_id: user.id, updated_at: now })
+    .insert({ title, event_type, event_date: event_date || null, visibility, reservation_visibility, user_id: user.id, share_token, updated_at: now })
     .select("id")
     .single();
 
