@@ -6,6 +6,8 @@ import { generateUniqueToken } from "@/lib/tokens";
 const VALID_SORT = ["created_at", "updated_at", "title", "event_date"] as const;
 type SortColumn = (typeof VALID_SORT)[number];
 
+const WISHLIST_LIMIT = 20;
+
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -15,12 +17,16 @@ export async function GET(req: NextRequest) {
   const sortParam = searchParams.get("sort") ?? "created_at";
   const sort: SortColumn = VALID_SORT.includes(sortParam as SortColumn) ? (sortParam as SortColumn) : "created_at";
   const ascending = searchParams.get("order") === "asc";
+  const page = Math.max(1, Number(searchParams.get("page") ?? 1));
+  const limit = Number(searchParams.get("limit") ?? WISHLIST_LIMIT);
+  const offset = (page - 1) * limit;
 
   const { data, error } = await supabaseAdmin
     .from("wishlists")
     .select("id, title, event_type, event_date, visibility")
     .eq("user_id", user.id)
-    .order(sort, { ascending, nullsFirst: false });
+    .order(sort, { ascending, nullsFirst: false })
+    .range(offset, offset + limit - 1);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

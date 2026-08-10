@@ -2,9 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
-import { EVENT_EMOJI } from "@/lib/constants/event-infos";
+import { LikedWishlistsClient, type LikedWishlistItem } from "@/components/liked/liked-wishlists-client";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+
+const LIMIT = 20;
 
 export default async function LikedWishlistsPage() {
   const supabase = await createClient();
@@ -16,9 +18,10 @@ export default async function LikedWishlistsPage() {
 
   const { data: likedRows } = await supabaseAdmin
     .from("wishlist_likes")
-    .select("wishlist_id, liked_at")
+    .select("wishlist_id")
     .eq("user_id", user.id)
-    .order("liked_at", { ascending: false });
+    .order("liked_at", { ascending: false })
+    .range(0, LIMIT - 1);
 
   const wishlistIds = (likedRows ?? []).map((r) => r.wishlist_id);
 
@@ -38,7 +41,17 @@ export default async function LikedWishlistsPage() {
 
   const ownerMap = new Map((owners ?? []).map((u) => [u.id, u.nickname]));
   const wishlistMap = new Map((wishlists ?? []).map((w) => [w.id, w]));
-  const sorted = (wishlistIds.map((id) => wishlistMap.get(id)).filter(Boolean) as NonNullable<typeof wishlists>);
+
+  const initialItems: LikedWishlistItem[] = wishlistIds
+    .map((id) => wishlistMap.get(id))
+    .filter(Boolean)
+    .map((w) => ({
+      id: w!.id,
+      title: w!.title,
+      event_type: w!.event_type,
+      explore_token: w!.explore_token,
+      nickname: ownerMap.get(w!.user_id) ?? null,
+    }));
 
   return (
     <AppShell>
@@ -52,44 +65,8 @@ export default async function LikedWishlistsPage() {
             Liked
           </Link>
           <h1 className="text-2xl font-semibold">Liked Wishlists</h1>
-          <p className="text-sm text-muted-foreground">{sorted.length} wishlists</p>
         </div>
-
-        {sorted.length === 0 ? (
-          <div className="rounded-xl border border-border p-12 text-center text-muted-foreground space-y-3">
-            <p className="text-4xl">🎁</p>
-            <p className="font-medium">No liked wishlists yet</p>
-            <Link href="/explore" className="text-sm text-emerald-600 hover:underline">
-              Browse Explore →
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {sorted.map((w) => {
-              const emoji = EVENT_EMOJI[w.event_type] ?? "🎁";
-              const href = w.explore_token ? `/explore/${w.explore_token}` : null;
-              const nickname = ownerMap.get(w.user_id);
-              const inner = (
-                <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3 hover:bg-secondary transition-colors">
-                  <span className="text-xl shrink-0">{emoji}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium truncate">{w.title}</p>
-                    {nickname && (
-                      <p className="text-xs text-muted-foreground mt-0.5">@{nickname}</p>
-                    )}
-                  </div>
-                </div>
-              );
-              return href ? (
-                <Link key={w.id} href={href}>
-                  {inner}
-                </Link>
-              ) : (
-                <div key={w.id}>{inner}</div>
-              );
-            })}
-          </div>
-        )}
+        <LikedWishlistsClient initialItems={initialItems} />
       </main>
     </AppShell>
   );

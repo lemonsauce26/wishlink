@@ -2,7 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
+import { FollowingListClient, type FollowingUser } from "@/components/following/following-list-client";
 import Link from "next/link";
+
+const LIMIT = 20;
 
 export default async function FollowingPage() {
   const supabase = await createClient();
@@ -38,15 +41,10 @@ export default async function FollowingPage() {
     );
   }
 
+  const pagedIds = followeeIds.slice(0, LIMIT);
   const [{ data: users }, { data: followerCounts }] = await Promise.all([
-    supabaseAdmin
-      .from("users")
-      .select("id, nickname, avatar_url")
-      .in("id", followeeIds),
-    supabaseAdmin
-      .from("follows")
-      .select("followee_id")
-      .in("followee_id", followeeIds),
+    supabaseAdmin.from("users").select("id, nickname, avatar_url").in("id", pagedIds),
+    supabaseAdmin.from("follows").select("followee_id").in("followee_id", pagedIds),
   ]);
 
   const countMap: Record<string, number> = {};
@@ -54,48 +52,18 @@ export default async function FollowingPage() {
     countMap[row.followee_id] = (countMap[row.followee_id] ?? 0) + 1;
   }
 
+  const initialItems: FollowingUser[] = (users ?? []).map((u) => ({
+    id: u.id,
+    nickname: u.nickname ?? "",
+    avatar_url: u.avatar_url,
+    followerCount: countMap[u.id] ?? 0,
+  }));
+
   return (
     <AppShell>
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         <h1 className="text-xl font-bold">Following</h1>
-
-        <div className="space-y-2">
-          {(users ?? []).map((u) => {
-            const nickname = u.nickname ?? "";
-            const count = countMap[u.id] ?? 0;
-            return (
-              <Link
-                key={u.id}
-                href={`/explore/user/${encodeURIComponent(nickname)}`}
-                className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-secondary/40 transition-colors"
-              >
-                <div
-                  className="rounded-full overflow-hidden bg-secondary border border-border shrink-0"
-                  style={{ width: 40, height: 40 }}
-                >
-                  {u.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={u.avatar_url}
-                      alt={nickname}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-muted-foreground">
-                      {nickname[0]?.toUpperCase() ?? "?"}
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm">@{nickname}</p>
-                  {count > 0 && (
-                    <p className="text-xs text-muted-foreground">{count} followers</p>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <FollowingListClient initialItems={initialItems} />
       </main>
     </AppShell>
   );

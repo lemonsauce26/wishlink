@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
-import { EVENT_EMOJI } from "@/lib/constants/event-infos";
+import { SharedListClient, type SharedWishlistItem } from "@/components/shared/shared-list-client";
+
+const LIMIT = 20;
 
 export default async function SharedPage() {
   const supabase = await createClient();
@@ -32,30 +33,32 @@ export default async function SharedPage() {
     ]),
   ];
 
-  if (allIds.length === 0) {
-    return (
-      <AppShell>
-        <main className="max-w-4xl mx-auto px-4 py-8">
-          <h1 className="text-xl font-bold mb-6">Shared</h1>
-          <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">
-            <p className="text-4xl">💝</p>
-            <p className="font-medium">No wishlists yet</p>
-            <p className="text-sm">
-              Wishlists shared with you or public ones you&apos;ve visited will
-              appear here.
-            </p>
-          </div>
-        </main>
-      </AppShell>
-    );
-  }
+  const emptyState = (
+    <AppShell>
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <h1 className="text-xl font-bold mb-6">Shared</h1>
+        <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">
+          <p className="text-4xl">💝</p>
+          <p className="font-medium">No wishlists yet</p>
+          <p className="text-sm">
+            Wishlists shared with you or public ones you&apos;ve visited will appear here.
+          </p>
+        </div>
+      </main>
+    </AppShell>
+  );
 
+  if (allIds.length === 0) return emptyState;
+
+  const pagedIds = allIds.slice(0, LIMIT);
   const { data: wishlists } = await supabaseAdmin
     .from("wishlists")
     .select("id, title, share_token, user_id, event_type")
-    .in("id", allIds);
+    .in("id", pagedIds);
 
-  const ownerIds = [...new Set((wishlists ?? []).map((w) => w.user_id))];
+  if (!wishlists || wishlists.length === 0) return emptyState;
+
+  const ownerIds = [...new Set(wishlists.map((w) => w.user_id))];
   const { data: owners } = await supabaseAdmin
     .from("users")
     .select("id, display_name, email")
@@ -65,30 +68,19 @@ export default async function SharedPage() {
     (owners ?? []).map((o) => [o.id, o.display_name ?? o.email])
   );
 
+  const initialItems: SharedWishlistItem[] = wishlists.map((wl) => ({
+    id: wl.id,
+    title: wl.title,
+    share_token: wl.share_token,
+    event_type: wl.event_type,
+    ownerName: ownerMap[wl.user_id] ?? "Unknown",
+  }));
+
   return (
     <AppShell>
       <main className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-xl font-bold mb-6">Shared</h1>
-
-        <div className="space-y-3">
-          {(wishlists ?? []).map((wl) => {
-            const ownerName = ownerMap[wl.user_id] ?? "Unknown";
-            const emoji = EVENT_EMOJI[wl.event_type] ?? "🎁";
-            return (
-              <Link
-                key={wl.id}
-                href={`/share/${wl.share_token}`}
-                className="flex items-center gap-3 rounded-xl border border-border px-4 py-4 hover:bg-secondary/40 transition-colors"
-              >
-                <span className="text-xl">{emoji}</span>
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{ownerName}의</p>
-                  <p className="font-medium truncate">{wl.title}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <SharedListClient initialItems={initialItems} />
       </main>
     </AppShell>
   );

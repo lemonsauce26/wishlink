@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { WishlistCard } from "./wishlist-card";
+import { ScrollSentinel } from "@/components/ui/scroll-sentinel";
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 
 type Wishlist = {
   id: string;
@@ -22,32 +24,72 @@ const SORT_OPTIONS = [
 
 type SortOption = (typeof SORT_OPTIONS)[number];
 
-export function WishlistList() {
-  const [wishlists, setWishlists] = useState<Wishlist[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sortIndex, setSortIndex] = useState(0);
+const LIMIT = 20;
 
-  const fetchWishlists = useCallback(async (opt: SortOption) => {
-    setLoading(true);
-    const res = await fetch(`/api/wishlists?sort=${opt.sort}&order=${opt.order}`);
+function WishlistInfiniteList({
+  initialItems,
+  sortOption,
+  onDeleted,
+}: {
+  initialItems: Wishlist[];
+  sortOption: SortOption;
+  onDeleted: () => void;
+}) {
+  const fetchMore = useCallback(
+    async (page: number): Promise<Wishlist[]> => {
+      const res = await fetch(
+        `/api/wishlists?sort=${sortOption.sort}&order=${sortOption.order}&page=${page}&limit=${LIMIT}`
+      );
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    },
+    [sortOption]
+  );
+
+  const { items, hasMore, loading, sentinelRef } = useInfiniteScroll({
+    initialItems,
+    fetchMore,
+    limit: LIMIT,
+  });
+
+  return (
+    <>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {items.map((w) => (
+          <WishlistCard key={w.id} wishlist={w} onDeleted={onDeleted} />
+        ))}
+      </div>
+      {hasMore && <ScrollSentinel sentinelRef={sentinelRef} loading={loading} />}
+    </>
+  );
+}
+
+export function WishlistList() {
+  const [sortIndex, setSortIndex] = useState(0);
+  const [initialItems, setInitialItems] = useState<Wishlist[] | null>(null);
+  const [key, setKey] = useState(0);
+
+  const loadInitial = useCallback(async (opt: SortOption) => {
+    setInitialItems(null);
+    const res = await fetch(`/api/wishlists?sort=${opt.sort}&order=${opt.order}&page=1&limit=${LIMIT}`);
     const data = await res.json();
-    setWishlists(Array.isArray(data) ? data : []);
-    setLoading(false);
+    setInitialItems(Array.isArray(data) ? data : []);
   }, []);
 
   useEffect(() => {
-    fetchWishlists(SORT_OPTIONS[sortIndex]);
-  }, [fetchWishlists, sortIndex]);
+    loadInitial(SORT_OPTIONS[sortIndex]);
+  }, [loadInitial, sortIndex]);
 
   const handleRefresh = useCallback(() => {
-    fetchWishlists(SORT_OPTIONS[sortIndex]);
-  }, [fetchWishlists, sortIndex]);
+    setKey((k) => k + 1);
+    loadInitial(SORT_OPTIONS[sortIndex]);
+  }, [loadInitial, sortIndex]);
 
-  if (loading) {
+  if (initialItems === null) {
     return <p className="text-sm text-muted-foreground">Loading…</p>;
   }
 
-  if (wishlists.length === 0) {
+  if (initialItems.length === 0 && key === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
         <span className="text-5xl">🎁</span>
@@ -78,11 +120,12 @@ export function WishlistList() {
           ))}
         </select>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {wishlists.map((w) => (
-          <WishlistCard key={w.id} wishlist={w} onDeleted={handleRefresh} />
-        ))}
-      </div>
+      <WishlistInfiniteList
+        key={`${sortIndex}-${key}`}
+        initialItems={initialItems}
+        sortOption={SORT_OPTIONS[sortIndex]}
+        onDeleted={handleRefresh}
+      />
     </div>
   );
 }
