@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { ExploreDetailClient } from "@/components/explore/explore-detail-client";
 import { SaveItemButton } from "@/components/explore/save-item-button";
 import { LikeItemButton } from "@/components/explore/like-item-button";
+import { ReportButton } from "@/components/explore/report-button";
 import { EVENT_EMOJI, EVENT_INFOS } from "@/lib/constants/event-infos";
 import Link from "next/link";
 
@@ -58,6 +59,18 @@ export default async function ExploreDetailPage({
         .eq("wishlist_id", wishlist.id)
         .maybeSingle(),
     ]);
+
+  const isOwnWishlist = wishlist.user_id === user?.id;
+
+  const { data: existingReport } =
+    user && !isOwnWishlist
+      ? await supabaseAdmin
+          .from("reports")
+          .select("id")
+          .eq("wishlist_id", wishlist.id)
+          .eq("reporter_id", user.id)
+          .maybeSingle()
+      : { data: null };
 
   const allItems = items ?? [];
   const itemIds = allItems.map((i) => i.id);
@@ -192,6 +205,16 @@ export default async function ExploreDetailPage({
                 <SaveItemButton itemId={item.id} isLoggedIn={!!user} />
               </div>
             ))}
+          </div>
+        )}
+
+        {!isOwnWishlist && (
+          <div className="flex justify-end">
+            <ReportButton
+              wishlistId={wishlist.id}
+              isLoggedIn={!!user}
+              initialReported={!!existingReport}
+            />
           </div>
         )}
 

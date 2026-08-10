@@ -238,6 +238,31 @@ export type Database = {
         };
         Relationships: [];
       };
+      reports: {
+        Row: {
+          id: string;
+          reporter_id: string;
+          wishlist_id: string;
+          reason: string;
+          comment: string | null;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          reporter_id: string;
+          wishlist_id: string;
+          reason: string;
+          comment?: string | null;
+          status?: string;
+          created_at?: string;
+        };
+        Update: {
+          status?: string;
+          comment?: string | null;
+        };
+        Relationships: [];
+      };
       wishitem_reservations: {
         Row: {
           id: string;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Menu, X, LayoutDashboard, Star, Inbox, Gift, Compass, Users, Heart, type LucideIcon } from "lucide-react";
+import { Menu, X, LayoutDashboard, Star, Inbox, Gift, Compass, Users, Heart, Flag, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 const navSets: Record<string, { href: string; icon: LucideIcon; label: string }[]> = {
@@ -17,6 +17,7 @@ const navSets: Record<string, { href: string; icon: LucideIcon; label: string }[
   ],
   console: [
     { href: "/console/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/console/reports", icon: Flag, label: "Reports" },
   ],
 };
 
