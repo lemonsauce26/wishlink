@@ -2,10 +2,26 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Menu, X, LayoutDashboard, Star, Inbox, Gift, Compass, Users, Heart } from "lucide-react";
+import { Menu, X, LayoutDashboard, Star, Inbox, Gift, Compass, Users, Heart, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
-export function MobileNav() {
+const navSets: Record<string, { href: string; icon: LucideIcon; label: string }[]> = {
+  default: [
+    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/wishlists", icon: Star, label: "My Wishlists" },
+    { href: "/shared", icon: Inbox, label: "Shared" },
+    { href: "/explore", icon: Compass, label: "Explore" },
+    { href: "/following", icon: Users, label: "Following" },
+    { href: "/liked", icon: Heart, label: "Liked" },
+    { href: "/reservations", icon: Gift, label: "My Reservations" },
+  ],
+  console: [
+    { href: "/console/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  ],
+};
+
+export function MobileNav({ variant }: { variant?: string } = {}) {
+  const items = navSets[variant ?? "default"] ?? navSets.default;
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -56,41 +72,13 @@ export function MobileNav() {
             </div>
 
             <nav className="p-4 space-y-1">
-              <Link href="/dashboard" onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
-                <LayoutDashboard className="w-4 h-4 text-muted-foreground" />
-                Dashboard
-              </Link>
-              <Link href="/wishlists" onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
-                <Star className="w-4 h-4 text-muted-foreground" />
-                My Wishlists
-              </Link>
-              <Link href="/shared" onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
-                <Inbox className="w-4 h-4 text-muted-foreground" />
-                Shared
-              </Link>
-              <Link href="/explore" onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
-                <Compass className="w-4 h-4 text-muted-foreground" />
-                Explore
-              </Link>
-              <Link href="/following" onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
-                <Users className="w-4 h-4 text-muted-foreground" />
-                Following
-              </Link>
-              <Link href="/liked" onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
-                <Heart className="w-4 h-4 text-muted-foreground" />
-                Liked
-              </Link>
-              <Link href="/reservations" onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
-                <Gift className="w-4 h-4 text-muted-foreground" />
-                My Reservations
-              </Link>
+              {items.map(({ href, icon: Icon, label }) => (
+                <Link key={href} href={href} onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-secondary transition-colors">
+                  <Icon className="w-4 h-4 text-muted-foreground" />
+                  {label}
+                </Link>
+              ))}
             </nav>
           </div>
         </>,

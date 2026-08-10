@@ -4,7 +4,7 @@ import { HeaderUserMenu } from "@/components/layout/header-user-menu";
 import { MobileNav } from "@/components/layout/mobile-side-nav";
 import Link from "next/link";
 
-export async function AppHeader() {
+export async function AppHeader({ badge, mobileNavVariant }: { badge?: string; mobileNavVariant?: string } = {}) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -24,8 +24,13 @@ export async function AppHeader() {
     <header className="border-b border-border bg-background">
       <div className="h-14 flex items-center justify-between">
         <div className="flex items-center gap-2 sm:w-56 px-4 shrink-0">
-          <MobileNav />
+          <MobileNav variant={mobileNavVariant} />
           <Link href="/dashboard" className="text-sm font-medium">WishLink</Link>
+          {badge && (
+            <span className="text-xs font-medium text-muted-foreground border border-border rounded px-1.5 py-0.5">
+              {badge}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-4 px-4">
           {user ? (

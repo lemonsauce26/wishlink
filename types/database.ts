@@ -9,6 +9,7 @@ export type Database = {
           nickname: string | null;
           avatar_url: string | null;
           provider: string;
+          role: string;
           created_at: string;
           updated_at: string;
         };
