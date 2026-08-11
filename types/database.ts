@@ -263,6 +263,26 @@ export type Database = {
         };
         Relationships: [];
       };
+      admin_report: {
+        Row: {
+          id: string;
+          report_id: string;
+          admin_id: string;
+          comment: string | null;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          report_id: string;
+          admin_id: string;
+          comment?: string | null;
+          status: string;
+          created_at?: string;
+        };
+        Update: Record<never, never>;
+        Relationships: [];
+      };
       wishitem_reservations: {
         Row: {
           id: string;

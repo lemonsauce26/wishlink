@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { ReportAdminActions } from "@/components/console/report-admin-actions";
 
 export default async function ReportDetailPage({
   params,
@@ -30,19 +31,34 @@ export default async function ReportDetailPage({
       .single(),
   ]);
 
-  const { data: owner } = wishlist
-    ? await supabaseAdmin
-        .from("users")
-        .select("id, nickname, email")
-        .eq("id", wishlist.user_id)
-        .single()
-    : { data: null };
+  const [{ data: owner }, { data: adminHistory }] = await Promise.all([
+    wishlist
+      ? supabaseAdmin.from("users").select("id, nickname, email").eq("id", wishlist.user_id).single()
+      : Promise.resolve({ data: null }),
+    supabaseAdmin
+      .from("admin_report")
+      .select("id, comment, status, created_at, admin_id")
+      .eq("report_id", report.id)
+      .order("created_at", { ascending: true }),
+  ]);
+
+  const adminIds = [...new Set((adminHistory ?? []).map((h) => h.admin_id))];
+  const { data: admins } = adminIds.length > 0
+    ? await supabaseAdmin.from("users").select("id, display_name, nickname, email").in("id", adminIds)
+    : { data: [] };
+
+  const adminMap = Object.fromEntries((admins ?? []).map((a) => [a.id, a]));
+
+  const history = (adminHistory ?? []).map((h) => ({
+    ...h,
+    adminDisplayName: adminMap[h.admin_id]?.display_name ?? adminMap[h.admin_id]?.nickname ?? "admin",
+    adminEmail: adminMap[h.admin_id]?.email ?? null,
+  }));
 
   const statusColor: Record<string, string> = {
     pending: "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400",
-    reviewed: "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
-    dismissed: "bg-secondary text-muted-foreground",
-    actioned: "bg-rose-100 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400",
+    processing: "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+    resolved: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
   };
 
   const fmt = (iso: string) =>
@@ -149,6 +165,12 @@ export default async function ReportDetailPage({
           )}
         </div>
       </section>
+
+      <ReportAdminActions
+        reportId={report.id}
+        initialStatus={report.status}
+        history={history}
+      />
     </main>
   );
 }
