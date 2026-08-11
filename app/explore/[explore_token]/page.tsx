@@ -23,11 +23,11 @@ export default async function ExploreDetailPage({
 
   const { data: wishlist } = await supabaseAdmin
     .from("wishlists")
-    .select("id, title, event_type, user_id, event_date")
+    .select("id, title, event_type, user_id, event_date, hidden_by_admin")
     .eq("explore_token", explore_token)
     .single();
 
-  if (!wishlist) notFound();
+  if (!wishlist || wishlist.hidden_by_admin) notFound();
 
   const [{ data: ownerProfile }, { data: items }, { count: likeCount }, { data: userLike }, { data: stats }] =
     await Promise.all([

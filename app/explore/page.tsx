@@ -24,6 +24,7 @@ export default async function ExplorePage({
     .from("wishlists")
     .select("id, title, event_type, user_id, explore_token, updated_at")
     .not("explore_token", "is", null)
+    .eq("hidden_by_admin", false)
     .range(0, LIMIT - 1)
     .order("updated_at", { ascending: sort === "oldest" });
 

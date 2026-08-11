@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     .from("wishlists")
     .select("id, title, event_type, user_id, explore_token, updated_at")
     .not("explore_token", "is", null)
+    .eq("hidden_by_admin", false)
     .range(offset, offset + limit - 1);
 
   if (filter !== "all") query = query.eq("event_type", filter);
