@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import Link from "next/link";
 
 export default async function ConsoleReportsPage() {
   const { data: reports } = await supabaseAdmin
@@ -54,6 +55,7 @@ export default async function ConsoleReportsPage() {
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">신고자</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">상태</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">일시</th>
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -62,19 +64,8 @@ export default async function ConsoleReportsPage() {
                 const reporter = reporterMap[report.reporter_id];
                 return (
                   <tr key={report.id} className="hover:bg-secondary/30 transition-colors">
-                    <td className="px-4 py-3">
-                      {wishlist?.explore_token ? (
-                        <a
-                          href={`/explore/${wishlist.explore_token}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-emerald-600 hover:underline font-medium"
-                        >
-                          {wishlist.title}
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground">{wishlist?.title ?? report.wishlist_id}</span>
-                      )}
+                    <td className="px-4 py-3 font-medium">
+                      {wishlist?.title ?? report.wishlist_id}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       <span>{report.reason}</span>
@@ -96,6 +87,14 @@ export default async function ConsoleReportsPage() {
                       {new Date(report.created_at).toLocaleDateString("en-CA", {
                         year: "numeric", month: "short", day: "numeric",
                       })}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/console/reports/${report.id}`}
+                        className="inline-flex items-center text-xs font-medium px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-secondary/60 transition-colors whitespace-nowrap"
+                      >
+                        Process
+                      </Link>
                     </td>
                   </tr>
                 );
