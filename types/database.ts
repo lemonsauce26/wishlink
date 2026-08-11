@@ -44,6 +44,7 @@ export type Database = {
           share_token: string;
           explore_token: string | null;
           reservation_visibility: "surprise" | "show" | "verified";
+          hidden_by_admin: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -67,6 +68,7 @@ export type Database = {
           visibility?: "public" | "private" | "inner_circle";
           explore_token?: string | null;
           reservation_visibility?: "surprise" | "show" | "verified";
+          hidden_by_admin?: boolean;
           updated_at?: string;
         };
         Relationships: [];

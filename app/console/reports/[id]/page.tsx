@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ReportAdminActions } from "@/components/console/report-admin-actions";
+import { WishlistVisibilityControl } from "@/components/console/wishlist-visibility-control";
 
 export default async function ReportDetailPage({
   params,
@@ -21,7 +22,7 @@ export default async function ReportDetailPage({
   const [{ data: wishlist }, { data: reporter }] = await Promise.all([
     supabaseAdmin
       .from("wishlists")
-      .select("id, title, event_type, explore_token, created_at, updated_at, user_id")
+      .select("id, title, event_type, explore_token, hidden_by_admin, created_at, updated_at, user_id")
       .eq("id", report.wishlist_id)
       .single(),
     supabaseAdmin
@@ -127,6 +128,12 @@ export default async function ReportDetailPage({
             </p>
           </div>
         </div>
+        {wishlist && (
+          <WishlistVisibilityControl
+            wishlistId={wishlist.id}
+            initialHidden={wishlist.hidden_by_admin}
+          />
+        )}
       </section>
 
       {/* 신고 정보 */}
