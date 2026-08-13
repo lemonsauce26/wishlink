@@ -35,6 +35,7 @@ export default async function ExploreUserPage({
       .select("id, title, event_type, explore_token")
       .eq("user_id", owner.id)
       .not("explore_token", "is", null)
+      .eq("hidden_by_admin", false)
       .order("updated_at", { ascending: false }),
     supabaseAdmin
       .from("follows")
