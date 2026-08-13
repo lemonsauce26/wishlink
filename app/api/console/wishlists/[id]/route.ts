@@ -19,12 +19,17 @@ export async function PATCH(
     .single();
   if (me?.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { hidden_by_admin } = await req.json();
+  const { hidden_by_admin, reportId, reportStatus } = await req.json();
 
-  const { error } = await supabaseAdmin
-    .from("wishlists")
-    .update({ hidden_by_admin })
-    .eq("id", id);
+  const [{ error }] = await Promise.all([
+    supabaseAdmin.from("wishlists").update({ hidden_by_admin }).eq("id", id),
+    supabaseAdmin.from("admin_report").insert({
+      report_id: reportId,
+      admin_id: user.id,
+      comment: hidden_by_admin ? "Hid this wishlist from Explore" : "Restored this wishlist to Explore",
+      status: reportStatus,
+    }),
+  ]);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

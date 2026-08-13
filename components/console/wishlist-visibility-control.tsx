@@ -9,22 +9,28 @@ type AlertState = { ok: true } | { ok: false; message: string } | null;
 export function WishlistVisibilityControl({
   wishlistId,
   initialHidden,
+  reportId,
+  reportStatus,
 }: {
   wishlistId: string;
   initialHidden: boolean;
+  reportId: string;
+  reportStatus: string;
 }) {
   const router = useRouter();
   const [hidden, setHidden] = useState(initialHidden);
+  const [confirming, setConfirming] = useState(false);
   const [dimmed, setDimmed] = useState(false);
   const [alert, setAlert] = useState<AlertState>(null);
 
-  async function handleToggle() {
+  async function handleConfirmAction() {
+    setConfirming(false);
     setDimmed(true);
     try {
       const res = await fetch(`/api/console/wishlists/${wishlistId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hidden_by_admin: !hidden }),
+        body: JSON.stringify({ hidden_by_admin: !hidden, reportId, reportStatus }),
       });
       if (res.ok) {
         setAlert({ ok: true });
@@ -37,7 +43,7 @@ export function WishlistVisibilityControl({
     }
   }
 
-  function handleConfirm() {
+  function handleResultConfirm() {
     const wasOk = alert?.ok;
     setAlert(null);
     setDimmed(false);
@@ -49,11 +55,51 @@ export function WishlistVisibilityControl({
 
   return (
     <>
+      {/* dimmed overlay (processing 중) */}
       {dimmed && createPortal(
         <div className="fixed inset-0 bg-black/40 z-[200]" />,
         document.body
       )}
 
+      {/* 확인 모달 */}
+      {confirming && createPortal(
+        <div className="fixed inset-0 z-[201] flex items-center justify-center px-4">
+          <div className="bg-background border border-border rounded-2xl shadow-xl w-full max-w-xs p-6 space-y-4 text-center">
+            <p className="text-3xl">{hidden ? "👁️" : "🚫"}</p>
+            <div className="space-y-1">
+              <p className="font-semibold text-base">
+                {hidden ? "Restore to Explore?" : "Hide from Explore?"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {hidden
+                  ? "This wishlist will become visible in Explore again."
+                  : "This wishlist will no longer appear in Explore."}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirming(false)}
+                className="flex-1 py-2 rounded-xl border border-border bg-secondary hover:bg-secondary/60 text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmAction}
+                className={`flex-1 py-2 rounded-xl text-white text-sm font-medium transition-colors ${
+                  hidden
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : "bg-rose-600 hover:bg-rose-700"
+                }`}
+              >
+                {hidden ? "Restore" : "Hide"}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* 결과 모달 */}
       {alert && createPortal(
         <div className="fixed inset-0 z-[201] flex items-center justify-center px-4">
           <div className="bg-background border border-border rounded-2xl shadow-xl w-full max-w-xs p-6 space-y-4 text-center">
@@ -73,7 +119,7 @@ export function WishlistVisibilityControl({
               </p>
             </div>
             <button
-              onClick={handleConfirm}
+              onClick={handleResultConfirm}
               className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors"
             >
               Confirm
@@ -94,7 +140,7 @@ export function WishlistVisibilityControl({
           {hidden ? "Hidden by Admin" : "Visible"}
         </span>
         <button
-          onClick={handleToggle}
+          onClick={() => setConfirming(true)}
           disabled={dimmed}
           className="text-xs font-medium px-3 py-1 rounded-lg border border-border bg-secondary hover:bg-secondary/60 transition-colors disabled:opacity-50"
         >

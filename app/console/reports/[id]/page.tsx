@@ -132,6 +132,8 @@ export default async function ReportDetailPage({
           <WishlistVisibilityControl
             wishlistId={wishlist.id}
             initialHidden={wishlist.hidden_by_admin}
+            reportId={report.id}
+            reportStatus={report.status}
           />
         )}
       </section>
