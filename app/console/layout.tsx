@@ -2,6 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { ConsoleShell } from "@/components/layout/console-shell";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "WishLink-Console",
+    template: "%s | WishLink-Console",
+  },
+};
 
 export default async function ConsoleLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
