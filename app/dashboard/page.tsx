@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   // My Wishlists: GREATEST(wishlist.updated_at, max(wish_items.updated_at))
   const { data: wishlistRows } = await supabaseAdmin
     .from("wishlists")
-    .select("id, title, event_type, event_date, visibility, updated_at")
+    .select("id, title, event_type, event_date, visibility, explore_token, updated_at")
     .eq("user_id", user.id);
 
   const wishlistIds = (wishlistRows ?? []).map((w) => w.id);
@@ -50,6 +50,55 @@ export default async function DashboardPage() {
     },
     {}
   );
+
+  const myItemIds = (allItems ?? []).map((i) => i.id);
+
+  const [{ data: wishlistLikes }, { data: wishlistStatsRows }, { count: reservationsReceivedCount }] =
+    await Promise.all([
+      wishlistIds.length > 0
+        ? supabaseAdmin.from("wishlist_likes").select("wishlist_id").in("wishlist_id", wishlistIds)
+        : Promise.resolve({ data: [] as { wishlist_id: string }[] }),
+      wishlistIds.length > 0
+        ? supabaseAdmin.from("wishlist_stats").select("wishlist_id, item_save_count").in("wishlist_id", wishlistIds)
+        : Promise.resolve({ data: [] as { wishlist_id: string; item_save_count: number }[] }),
+      myItemIds.length > 0
+        ? supabaseAdmin
+            .from("wishitem_reservations")
+            .select("id", { count: "exact", head: true })
+            .in("wish_item_id", myItemIds)
+            .eq("reserved_by_owner", false)
+            .is("cancelled_at", null)
+        : Promise.resolve({ count: 0 }),
+    ]);
+
+  const totalLikes = (wishlistLikes ?? []).length;
+  const totalItemSaves = (wishlistStatsRows ?? []).reduce((sum, s) => sum + (s.item_save_count ?? 0), 0);
+  const totalReservationsReceived = reservationsReceivedCount ?? 0;
+
+  const likeCountMap: Record<string, number> = {};
+  for (const like of wishlistLikes ?? []) {
+    likeCountMap[like.wishlist_id] = (likeCountMap[like.wishlist_id] ?? 0) + 1;
+  }
+
+  const myExploreWishlists = (wishlistRows ?? []).filter((w) => w.explore_token != null);
+
+  const { data: followRows } = await supabaseAdmin
+    .from("follows")
+    .select("followee_id, followed_at")
+    .eq("follower_id", user.id)
+    .order("followed_at", { ascending: false });
+
+  const followeeIds = (followRows ?? []).map((f) => f.followee_id);
+
+  const { data: followeeUsers } = followeeIds.length > 0
+    ? await supabaseAdmin
+        .from("users")
+        .select("id, nickname, avatar_url")
+        .in("id", followeeIds)
+    : { data: [] as { id: string; nickname: string | null; avatar_url: string | null }[] };
+
+  const followeeMap = Object.fromEntries((followeeUsers ?? []).map((u) => [u.id, u]));
+  const followingList = followeeIds.map((id) => followeeMap[id]).filter(Boolean);
 
   const recentWishlists = (wishlistRows ?? [])
     .map((w) => {
@@ -251,6 +300,96 @@ export default async function DashboardPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </section>
+        {/* Following */}
+        <section className="rounded-2xl border border-border p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-base">Following</h2>
+            <Link
+              href="/following"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              See all →
+            </Link>
+          </div>
+
+          {followingList.length === 0 ? (
+            <div className="py-4 text-center">
+              <p className="text-sm text-muted-foreground">Not following anyone yet.</p>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-3">
+              {followingList.map((u) => (
+                <Link
+                  key={u.id}
+                  href={`/explore/user/${encodeURIComponent(u.nickname ?? u.id)}`}
+                  className="flex flex-col items-center gap-1.5 group"
+                >
+                  <div className="w-11 h-11 rounded-full overflow-hidden bg-secondary border border-border">
+                    {u.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={u.avatar_url} alt={u.nickname ?? ""} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-muted-foreground">
+                        {(u.nickname ?? "?")[0].toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors max-w-[56px] truncate text-center">
+                    @{u.nickname ?? "—"}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* My Explore Posts */}
+        <section className="rounded-2xl border border-border p-5 space-y-4">
+          <h2 className="font-semibold text-base">My Explore Posts</h2>
+
+          <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border overflow-hidden">
+            <div className="px-4 py-3 text-center">
+              <p className="text-xl font-bold tabular-nums">{totalLikes}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Likes</p>
+            </div>
+            <div className="px-4 py-3 text-center">
+              <p className="text-xl font-bold tabular-nums">{totalReservationsReceived}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Reserved</p>
+            </div>
+            <div className="px-4 py-3 text-center">
+              <p className="text-xl font-bold tabular-nums">{totalItemSaves}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Saved</p>
+            </div>
+          </div>
+
+          {myExploreWishlists.length === 0 ? (
+            <div className="py-4 text-center">
+              <p className="text-sm text-muted-foreground">No wishlists on Explore yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {myExploreWishlists.map((w) => {
+                const emoji = EVENT_EMOJI[w.event_type] ?? "🎁";
+                return (
+                  <a
+                    key={w.id}
+                    href={`/explore/${w.explore_token}`}
+                    className="flex items-center gap-3 rounded-xl border border-border p-4 hover:bg-secondary/50 transition-colors"
+                  >
+                    <span className="text-2xl shrink-0">{emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{w.title}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
+                      <span>♡</span>
+                      {likeCountMap[w.id] ?? 0}
+                    </span>
+                  </a>
+                );
+              })}
             </div>
           )}
         </section>
