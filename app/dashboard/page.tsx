@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   // My Wishlists: GREATEST(wishlist.updated_at, max(wish_items.updated_at))
   const { data: wishlistRows } = await supabaseAdmin
     .from("wishlists")
-    .select("id, title, event_type, event_date, visibility, explore_token, updated_at")
+    .select("id, title, event_type, event_date, visibility, explore_token, hidden_by_admin, updated_at")
     .eq("user_id", user.id);
 
   const wishlistIds = (wishlistRows ?? []).map((w) => w.id);
@@ -53,7 +53,7 @@ export default async function DashboardPage() {
 
   const myItemIds = (allItems ?? []).map((i) => i.id);
 
-  const [{ data: wishlistLikes }, { data: wishlistStatsRows }, { count: reservationsReceivedCount }] =
+  const [{ data: wishlistLikes }, { data: wishlistStatsRows }, { data: reservationsReceived }] =
     await Promise.all([
       wishlistIds.length > 0
         ? supabaseAdmin.from("wishlist_likes").select("wishlist_id").in("wishlist_id", wishlistIds)
@@ -64,23 +64,31 @@ export default async function DashboardPage() {
       myItemIds.length > 0
         ? supabaseAdmin
             .from("wishitem_reservations")
-            .select("id", { count: "exact", head: true })
+            .select("wish_item_id")
             .in("wish_item_id", myItemIds)
             .eq("reserved_by_owner", false)
             .is("cancelled_at", null)
-        : Promise.resolve({ count: 0 }),
+        : Promise.resolve({ data: [] as { wish_item_id: string }[] }),
     ]);
 
-  const totalLikes = (wishlistLikes ?? []).length;
-  const totalItemSaves = (wishlistStatsRows ?? []).reduce((sum, s) => sum + (s.item_save_count ?? 0), 0);
-  const totalReservationsReceived = reservationsReceivedCount ?? 0;
+  const myExploreWishlists = (wishlistRows ?? []).filter((w) => w.explore_token != null);
+  const visibleExploreIds = new Set(myExploreWishlists.filter((w) => !w.hidden_by_admin).map((w) => w.id));
+
+  const visibleItemIds = new Set(
+    (allItems ?? []).filter((i) => visibleExploreIds.has(i.wishlist_id)).map((i) => i.id)
+  );
+  const totalLikes = (wishlistLikes ?? []).filter((l) => visibleExploreIds.has(l.wishlist_id)).length;
+  const totalItemSaves = (wishlistStatsRows ?? [])
+    .filter((s) => visibleExploreIds.has(s.wishlist_id))
+    .reduce((sum, s) => sum + (s.item_save_count ?? 0), 0);
+  const totalReservationsReceived = (reservationsReceived ?? []).filter((r) =>
+    visibleItemIds.has(r.wish_item_id)
+  ).length;
 
   const likeCountMap: Record<string, number> = {};
   for (const like of wishlistLikes ?? []) {
     likeCountMap[like.wishlist_id] = (likeCountMap[like.wishlist_id] ?? 0) + 1;
   }
-
-  const myExploreWishlists = (wishlistRows ?? []).filter((w) => w.explore_token != null);
 
   const { data: followRows } = await supabaseAdmin
     .from("follows")
@@ -382,6 +390,11 @@ export default async function DashboardPage() {
                     <span className="text-2xl shrink-0">{emoji}</span>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{w.title}</p>
+                      {w.hidden_by_admin && (
+                        <span className="inline-block mt-0.5 text-xs px-1.5 py-0.5 rounded bg-rose-100 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400">
+                          Hidden by Admin
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
                       <span>♡</span>
