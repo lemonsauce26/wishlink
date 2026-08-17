@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { AppShell } from "@/components/layout/app-shell";
 import { ExploreFilterBar } from "@/components/explore/explore-filter-bar";
 import { ExploreListClient, type ExploreCardData } from "@/components/explore/explore-list-client";
+import { ExploreSearchBar } from "@/components/explore/explore-search-bar";
 import Link from "next/link";
 
 const LIMIT = 20;
@@ -11,14 +12,100 @@ const LIMIT = 20;
 export default async function ExplorePage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; sort?: string }>;
+  searchParams: Promise<{ filter?: string; sort?: string; q?: string }>;
 }) {
-  const { filter = "all", sort = "latest" } = await searchParams;
+  const { filter = "all", sort = "latest", q } = await searchParams;
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // 검색 모드
+  if (q?.trim()) {
+    const keyword = q.trim();
+
+    const { data: matchedUsers } = await supabaseAdmin
+      .from("users")
+      .select("id, nickname, avatar_url")
+      .ilike("nickname", `%${keyword}%`)
+      .limit(20);
+
+    const userIds = (matchedUsers ?? []).map((u) => u.id);
+
+    const { data: exploreWishlists } = userIds.length > 0
+      ? await supabaseAdmin
+          .from("wishlists")
+          .select("user_id")
+          .in("user_id", userIds)
+          .not("explore_token", "is", null)
+          .eq("hidden_by_admin", false)
+      : { data: [] as { user_id: string }[] };
+
+    const wishlistCountMap: Record<string, number> = {};
+    for (const w of exploreWishlists ?? []) {
+      wishlistCountMap[w.user_id] = (wishlistCountMap[w.user_id] ?? 0) + 1;
+    }
+
+    const peopleResults = (matchedUsers ?? []).filter((u) => (wishlistCountMap[u.id] ?? 0) > 0);
+
+    return (
+      <AppShell>
+        <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold">Explore</h1>
+            {user ? (
+              <Link href="/wishlists" className="text-sm text-emerald-600 font-medium hover:underline">
+                Post your wishlist →
+              </Link>
+            ) : (
+              <Link href="/auth/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Sign in to post →
+              </Link>
+            )}
+          </div>
+
+          <ExploreSearchBar defaultValue={keyword} />
+
+          {peopleResults.length === 0 ? (
+            <div className="py-12 text-center space-y-2">
+              <p className="text-muted-foreground text-sm">No results found for &ldquo;{keyword}&rdquo;</p>
+            </div>
+          ) : (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">People</h2>
+              <div className="space-y-2">
+                {peopleResults.map((u) => (
+                  <Link
+                    key={u.id}
+                    href={`/explore/user/${encodeURIComponent(u.nickname ?? u.id)}`}
+                    className="flex items-center gap-3 rounded-xl p-4 hover:bg-secondary/50 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-secondary shrink-0">
+                      {u.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={u.avatar_url} alt={u.nickname ?? ""} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-muted-foreground">
+                          {(u.nickname ?? "?")[0].toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">@{u.nickname}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {wishlistCountMap[u.id]} wishlist{wishlistCountMap[u.id] !== 1 ? "s" : ""} on Explore
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+        </main>
+      </AppShell>
+    );
+  }
 
   let query = supabaseAdmin
     .from("wishlists")
@@ -103,6 +190,8 @@ export default async function ExplorePage({
             </Link>
           )}
         </div>
+
+        <ExploreSearchBar />
 
         <Suspense>
           <ExploreFilterBar currentFilter={filter} currentSort={sort} />
