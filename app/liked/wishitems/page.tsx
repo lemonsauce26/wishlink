@@ -57,7 +57,7 @@ export default async function LikedWishItemsPage() {
 
   return (
     <AppShell>
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div className="space-y-1">
           <Link
             href="/liked"

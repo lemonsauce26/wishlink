@@ -23,7 +23,7 @@ export default async function FollowingPage() {
   if (followeeIds.length === 0) {
     return (
       <AppShell>
-        <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
           <h1 className="text-xl font-bold">Following</h1>
           <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">
             <p className="text-4xl">🔭</p>
@@ -61,7 +61,7 @@ export default async function FollowingPage() {
 
   return (
     <AppShell>
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <h1 className="text-xl font-bold">Following</h1>
         <FollowingListClient initialItems={initialItems} />
       </main>

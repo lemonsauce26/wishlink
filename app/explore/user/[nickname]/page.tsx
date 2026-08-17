@@ -95,7 +95,7 @@ export default async function ExploreUserPage({
 
   return (
     <AppShell>
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div className="flex items-start gap-3">
           <div className="rounded-full overflow-hidden bg-secondary border border-border shrink-0" style={{ width: 48, height: 48 }}>
             {owner.avatar_url ? (

@@ -80,7 +80,7 @@ export default async function LikedPage() {
 
   return (
     <AppShell>
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-10">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-10">
         <h1 className="text-2xl font-semibold">Liked</h1>
 
         {/* Liked Wishlists */}

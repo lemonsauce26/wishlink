@@ -177,7 +177,7 @@ export default async function ExplorePage({
 
     return (
       <AppShell>
-        <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">Explore</h1>
             {user ? (
@@ -347,7 +347,7 @@ export default async function ExplorePage({
 
   return (
     <AppShell>
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Explore</h1>
           {user ? (

@@ -98,7 +98,7 @@ export default async function ExploreDetailPage({
 
   return (
     <AppShell>
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div className="space-y-2">
           <h1 className="text-2xl leading-snug">
             {emoji} {wishlist.title}

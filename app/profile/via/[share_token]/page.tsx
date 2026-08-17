@@ -75,7 +75,7 @@ export default async function ProfileViaSharePage({
 
   return (
     <AppShell>
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full overflow-hidden bg-secondary border border-border shrink-0">
             {owner.avatar_url ? (

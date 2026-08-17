@@ -31,7 +31,7 @@ export default async function InnerCirclePage({ params }: { params: Promise<{ id
 
   return (
     <AppShell>
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-2">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-2">
         <h1 className="text-2xl font-bold">✨ Inner Circle</h1>
         <p className="text-sm text-muted-foreground pb-4">
           Only people you invite can view this wishlist.

@@ -35,7 +35,7 @@ export default async function ItemDetailPage({
 
   return (
     <AppShell>
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         <WishItemDetail item={item} wishlistId={id} isOwner={isOwner} />
       </main>
     </AppShell>

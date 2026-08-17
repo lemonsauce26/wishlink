@@ -28,7 +28,7 @@ export default async function NewItemPage({
 
   return (
     <AppShell>
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Add Item</h1>
         <WishItemForm
           mode="create"
