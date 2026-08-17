@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { ExploreFilterBar } from "@/components/explore/explore-filter-bar";
 import { ExploreListClient, type ExploreCardData } from "@/components/explore/explore-list-client";
 import { ExploreSearchBar } from "@/components/explore/explore-search-bar";
+import { ExploreCard } from "@/components/explore/explore-card";
 import Link from "next/link";
 
 const LIMIT = 20;
@@ -25,6 +26,7 @@ export default async function ExplorePage({
   if (q?.trim()) {
     const keyword = q.trim();
 
+    // People 검색
     const { data: matchedUsers } = await supabaseAdmin
       .from("users")
       .select("id, nickname, avatar_url")
@@ -33,7 +35,7 @@ export default async function ExplorePage({
 
     const userIds = (matchedUsers ?? []).map((u) => u.id);
 
-    const { data: exploreWishlists } = userIds.length > 0
+    const { data: userExploreWishlists } = userIds.length > 0
       ? await supabaseAdmin
           .from("wishlists")
           .select("user_id")
@@ -43,11 +45,75 @@ export default async function ExplorePage({
       : { data: [] as { user_id: string }[] };
 
     const wishlistCountMap: Record<string, number> = {};
-    for (const w of exploreWishlists ?? []) {
+    for (const w of userExploreWishlists ?? []) {
       wishlistCountMap[w.user_id] = (wishlistCountMap[w.user_id] ?? 0) + 1;
     }
 
     const peopleResults = (matchedUsers ?? []).filter((u) => (wishlistCountMap[u.id] ?? 0) > 0);
+
+    // Wishlists 검색
+    let wlQuery = supabaseAdmin
+      .from("wishlists")
+      .select("id, title, event_type, user_id, explore_token, updated_at")
+      .ilike("title", `%${keyword}%`)
+      .not("explore_token", "is", null)
+      .eq("hidden_by_admin", false)
+      .order("updated_at", { ascending: false })
+      .limit(20);
+
+    if (filter !== "all") wlQuery = wlQuery.eq("event_type", filter);
+
+    const { data: searchedWishlists } = await wlQuery;
+    const allSearchedWishlists = searchedWishlists ?? [];
+
+    const wlIds = allSearchedWishlists.map((w) => w.id);
+    const wlUserIds = [...new Set(allSearchedWishlists.map((w) => w.user_id))];
+
+    const [{ data: wlOwners }, { data: wlItems }, { data: wlLikes }, { data: wlStats }] =
+      wlIds.length > 0
+        ? await Promise.all([
+            supabaseAdmin.from("users").select("id, nickname").in("id", wlUserIds),
+            supabaseAdmin
+              .from("wish_items")
+              .select("id, wishlist_id, title, image_url")
+              .in("wishlist_id", wlIds)
+              .order("created_at", { ascending: true }),
+            supabaseAdmin.from("wishlist_likes").select("wishlist_id").in("wishlist_id", wlIds),
+            supabaseAdmin
+              .from("wishlist_stats")
+              .select("wishlist_id, copy_count, item_save_count")
+              .in("wishlist_id", wlIds),
+          ])
+        : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
+
+    const wlNicknameMap = Object.fromEntries((wlOwners ?? []).map((o) => [o.id, o.nickname ?? ""]));
+    const wlLikeCountMap: Record<string, number> = {};
+    for (const l of wlLikes ?? []) {
+      wlLikeCountMap[l.wishlist_id] = (wlLikeCountMap[l.wishlist_id] ?? 0) + 1;
+    }
+    const wlStatsMap = Object.fromEntries((wlStats ?? []).map((s) => [s.wishlist_id, s]));
+    const wlItemCountMap: Record<string, number> = {};
+    const wlPreviewMap: Record<string, { id: string; title: string; image_url: string | null }[]> = {};
+    for (const item of wlItems ?? []) {
+      wlItemCountMap[item.wishlist_id] = (wlItemCountMap[item.wishlist_id] ?? 0) + 1;
+      if (!wlPreviewMap[item.wishlist_id]) wlPreviewMap[item.wishlist_id] = [];
+      if (wlPreviewMap[item.wishlist_id].length < 9) {
+        wlPreviewMap[item.wishlist_id].push({ id: item.id, title: item.title, image_url: item.image_url });
+      }
+    }
+
+    const wishlistResults: ExploreCardData[] = allSearchedWishlists.map((wl) => ({
+      id: wl.id,
+      title: wl.title,
+      event_type: wl.event_type,
+      explore_token: wl.explore_token!,
+      nickname: wlNicknameMap[wl.user_id] ?? "",
+      itemCount: wlItemCountMap[wl.id] ?? 0,
+      previewItems: wlPreviewMap[wl.id] ?? [],
+      likeCount: wlLikeCountMap[wl.id] ?? 0,
+      saveCount: wlStatsMap[wl.id]?.item_save_count ?? 0,
+      copyCount: wlStatsMap[wl.id]?.copy_count ?? 0,
+    }));
 
     return (
       <AppShell>
@@ -67,14 +133,13 @@ export default async function ExplorePage({
 
           <ExploreSearchBar defaultValue={keyword} />
 
-          {peopleResults.length === 0 ? (
-            <div className="py-12 text-center space-y-2">
-              <p className="text-muted-foreground text-sm">No results found for &ldquo;{keyword}&rdquo;</p>
-            </div>
-          ) : (
-            <section className="space-y-3">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">People</h2>
-              <div className="space-y-2">
+          {/* People */}
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">People</h2>
+            {peopleResults.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-3">No people found for &ldquo;{keyword}&rdquo;</p>
+            ) : (
+              <div className="space-y-1">
                 {peopleResults.map((u) => (
                   <Link
                     key={u.id}
@@ -100,8 +165,34 @@ export default async function ExplorePage({
                   </Link>
                 ))}
               </div>
-            </section>
-          )}
+            )}
+          </section>
+
+          {/* Wishlists */}
+          <section className="space-y-4">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Wishlists</h2>
+            <Suspense>
+              <ExploreFilterBar currentFilter={filter} currentSort={sort} />
+            </Suspense>
+            {wishlistResults.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-3">No wishlists found for &ldquo;{keyword}&rdquo;</p>
+            ) : (
+              <div className="space-y-4">
+                {wishlistResults.map((wl) => (
+                  <ExploreCard
+                    key={wl.id}
+                    wishlist={{ title: wl.title, event_type: wl.event_type, explore_token: wl.explore_token }}
+                    nickname={wl.nickname}
+                    itemCount={wl.itemCount}
+                    previewItems={wl.previewItems}
+                    likeCount={wl.likeCount}
+                    saveCount={wl.saveCount}
+                    copyCount={wl.copyCount}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
         </main>
       </AppShell>
     );
