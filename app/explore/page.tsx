@@ -115,6 +115,66 @@ export default async function ExplorePage({
       copyCount: wlStatsMap[wl.id]?.copy_count ?? 0,
     }));
 
+    // 위시리스트 검색 결과 없을 때 보여줄 일반 피드
+    let fallbackItems: ExploreCardData[] = [];
+    if (wishlistResults.length === 0) {
+      const { data: fbWishlists } = await supabaseAdmin
+        .from("wishlists")
+        .select("id, title, event_type, user_id, explore_token, updated_at")
+        .not("explore_token", "is", null)
+        .eq("hidden_by_admin", false)
+        .order("updated_at", { ascending: false })
+        .limit(LIMIT);
+
+      const fbAll = fbWishlists ?? [];
+      const fbIds = fbAll.map((w) => w.id);
+      const fbUserIds = [...new Set(fbAll.map((w) => w.user_id))];
+
+      if (fbIds.length > 0) {
+        const [{ data: fbOwners }, { data: fbItems }, { data: fbLikes }, { data: fbStats }] =
+          await Promise.all([
+            supabaseAdmin.from("users").select("id, nickname").in("id", fbUserIds),
+            supabaseAdmin
+              .from("wish_items")
+              .select("id, wishlist_id, title, image_url")
+              .in("wishlist_id", fbIds)
+              .order("created_at", { ascending: true }),
+            supabaseAdmin.from("wishlist_likes").select("wishlist_id").in("wishlist_id", fbIds),
+            supabaseAdmin
+              .from("wishlist_stats")
+              .select("wishlist_id, copy_count, item_save_count")
+              .in("wishlist_id", fbIds),
+          ]);
+
+        const fbNicknameMap = Object.fromEntries((fbOwners ?? []).map((o) => [o.id, o.nickname ?? ""]));
+        const fbLikeMap: Record<string, number> = {};
+        for (const l of fbLikes ?? []) fbLikeMap[l.wishlist_id] = (fbLikeMap[l.wishlist_id] ?? 0) + 1;
+        const fbStatsMap = Object.fromEntries((fbStats ?? []).map((s) => [s.wishlist_id, s]));
+        const fbItemCountMap: Record<string, number> = {};
+        const fbPreviewMap: Record<string, { id: string; title: string; image_url: string | null }[]> = {};
+        for (const item of fbItems ?? []) {
+          fbItemCountMap[item.wishlist_id] = (fbItemCountMap[item.wishlist_id] ?? 0) + 1;
+          if (!fbPreviewMap[item.wishlist_id]) fbPreviewMap[item.wishlist_id] = [];
+          if (fbPreviewMap[item.wishlist_id].length < 9) {
+            fbPreviewMap[item.wishlist_id].push({ id: item.id, title: item.title, image_url: item.image_url });
+          }
+        }
+
+        fallbackItems = fbAll.map((wl) => ({
+          id: wl.id,
+          title: wl.title,
+          event_type: wl.event_type,
+          explore_token: wl.explore_token!,
+          nickname: fbNicknameMap[wl.user_id] ?? "",
+          itemCount: fbItemCountMap[wl.id] ?? 0,
+          previewItems: fbPreviewMap[wl.id] ?? [],
+          likeCount: fbLikeMap[wl.id] ?? 0,
+          saveCount: fbStatsMap[wl.id]?.item_save_count ?? 0,
+          copyCount: fbStatsMap[wl.id]?.copy_count ?? 0,
+        }));
+      }
+    }
+
     return (
       <AppShell>
         <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -136,62 +196,87 @@ export default async function ExplorePage({
           {/* People */}
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">People</h2>
-            {peopleResults.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-3">No people found for &ldquo;{keyword}&rdquo;</p>
-            ) : (
-              <div className="space-y-1">
-                {peopleResults.map((u) => (
-                  <Link
-                    key={u.id}
-                    href={`/explore/user/${encodeURIComponent(u.nickname ?? u.id)}`}
-                    className="flex items-center gap-3 rounded-xl p-4 hover:bg-secondary/50 transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-secondary shrink-0">
-                      {u.avatar_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={u.avatar_url} alt={u.nickname ?? ""} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-muted-foreground">
-                          {(u.nickname ?? "?")[0].toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">@{u.nickname}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {wishlistCountMap[u.id]} wishlist{wishlistCountMap[u.id] !== 1 ? "s" : ""} on Explore
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
+            <div className="rounded-2xl border border-border overflow-hidden">
+              {peopleResults.length === 0 ? (
+                <p className="text-sm text-muted-foreground px-5 py-6 text-center">No people found for &ldquo;{keyword}&rdquo;</p>
+              ) : (
+                <div className="divide-y divide-border">
+                  {peopleResults.map((u) => (
+                    <Link
+                      key={u.id}
+                      href={`/explore/user/${encodeURIComponent(u.nickname ?? u.id)}`}
+                      className="flex items-center gap-3 px-5 py-4 hover:bg-secondary/50 transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-secondary shrink-0">
+                        {u.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={u.avatar_url} alt={u.nickname ?? ""} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-sm font-semibold text-muted-foreground">
+                            {(u.nickname ?? "?")[0].toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">@{u.nickname}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {wishlistCountMap[u.id]} wishlist{wishlistCountMap[u.id] !== 1 ? "s" : ""} on Explore
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Wishlists */}
-          <section className="space-y-4">
+          <section className="space-y-2 !mt-9">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Wishlists</h2>
-            <Suspense>
-              <ExploreFilterBar currentFilter={filter} currentSort={sort} />
-            </Suspense>
-            {wishlistResults.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-3">No wishlists found for &ldquo;{keyword}&rdquo;</p>
-            ) : (
-              <div className="space-y-4">
-                {wishlistResults.map((wl) => (
-                  <ExploreCard
-                    key={wl.id}
-                    wishlist={{ title: wl.title, event_type: wl.event_type, explore_token: wl.explore_token }}
-                    nickname={wl.nickname}
-                    itemCount={wl.itemCount}
-                    previewItems={wl.previewItems}
-                    likeCount={wl.likeCount}
-                    saveCount={wl.saveCount}
-                    copyCount={wl.copyCount}
-                  />
-                ))}
-              </div>
-            )}
+            <div className="rounded-2xl border border-border p-5 space-y-4">
+              <Suspense>
+                <ExploreFilterBar currentFilter={filter} currentSort={sort} />
+              </Suspense>
+              {wishlistResults.length === 0 ? (
+                <>
+                  <p className="text-sm text-muted-foreground">No wishlists found for &ldquo;{keyword}&rdquo;</p>
+                  {fallbackItems.length > 0 && (
+                    <p className="text-sm font-medium !mt-16">✨ You might also like these 👀</p>
+                  )}
+                  {fallbackItems.length > 0 && (
+                    <div className="space-y-4">
+                      {fallbackItems.map((wl) => (
+                        <ExploreCard
+                          key={wl.id}
+                          wishlist={{ title: wl.title, event_type: wl.event_type, explore_token: wl.explore_token }}
+                          nickname={wl.nickname}
+                          itemCount={wl.itemCount}
+                          previewItems={wl.previewItems}
+                          likeCount={wl.likeCount}
+                          saveCount={wl.saveCount}
+                          copyCount={wl.copyCount}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-4">
+                  {wishlistResults.map((wl) => (
+                    <ExploreCard
+                      key={wl.id}
+                      wishlist={{ title: wl.title, event_type: wl.event_type, explore_token: wl.explore_token }}
+                      nickname={wl.nickname}
+                      itemCount={wl.itemCount}
+                      previewItems={wl.previewItems}
+                      likeCount={wl.likeCount}
+                      saveCount={wl.saveCount}
+                      copyCount={wl.copyCount}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
         </main>
       </AppShell>
@@ -284,11 +369,15 @@ export default async function ExplorePage({
 
         <ExploreSearchBar />
 
-        <Suspense>
-          <ExploreFilterBar currentFilter={filter} currentSort={sort} />
-        </Suspense>
-
-        <ExploreListClient initialItems={initialItems} filter={filter} sort={sort} />
+        <section className="space-y-2">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Wishlists</h2>
+          <div className="rounded-2xl border border-border p-5 space-y-4">
+            <Suspense>
+              <ExploreFilterBar currentFilter={filter} currentSort={sort} />
+            </Suspense>
+            <ExploreListClient initialItems={initialItems} filter={filter} sort={sort} />
+          </div>
+        </section>
       </main>
     </AppShell>
   );
