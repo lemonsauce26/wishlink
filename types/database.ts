@@ -315,6 +315,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: "reservation" | "reservation_cancel" | "new_follower" | "new_wishlist";
+          actor_id: string | null;
+          wishlist_id: string | null;
+          wish_item_id: string | null;
+          read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: "reservation" | "reservation_cancel" | "new_follower" | "new_wishlist";
+          actor_id?: string | null;
+          wishlist_id?: string | null;
+          wish_item_id?: string | null;
+          read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          read?: boolean;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<never, never>;
     Functions: Record<never, never>;

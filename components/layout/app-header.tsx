@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { MobileNav } from "@/components/layout/mobile-side-nav";
 import Link from "next/link";
 
@@ -10,14 +11,23 @@ export async function AppHeader({ badge, mobileNavVariant }: { badge?: string; m
 
   let displayName: string | null = null;
   let avatarUrl: string | null = null;
+  let unreadCount = 0;
   if (user) {
-    const { data: profile } = await supabaseAdmin
-      .from("users")
-      .select("display_name, avatar_url")
-      .eq("id", user.id)
-      .single();
-    displayName = profile?.display_name ?? user.email ?? null;
-    avatarUrl = profile?.avatar_url ?? null;
+    const [profileResult, unreadResult] = await Promise.all([
+      supabaseAdmin
+        .from("users")
+        .select("display_name, avatar_url")
+        .eq("id", user.id)
+        .single(),
+      supabaseAdmin
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("read", false),
+    ]);
+    displayName = profileResult.data?.display_name ?? user.email ?? null;
+    avatarUrl = profileResult.data?.avatar_url ?? null;
+    unreadCount = unreadResult.count ?? 0;
   }
 
   return (
@@ -32,7 +42,8 @@ export async function AppHeader({ badge, mobileNavVariant }: { badge?: string; m
             </span>
           )}
         </div>
-        <div className="flex items-center gap-4 px-4">
+        <div className="flex items-center px-4">
+          {user && <NotificationBell unreadCount={unreadCount} />}
           {user ? (
             <HeaderUserMenu displayName={displayName ?? ""} avatarUrl={avatarUrl} />
           ) : (
