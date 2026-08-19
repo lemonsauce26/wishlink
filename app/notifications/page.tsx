@@ -3,9 +3,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
-import { Bell, Gift, UserPlus, Star, XCircle } from "lucide-react";
+import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle } from "lucide-react";
 
-type NotificationType = "reservation" | "reservation_cancel" | "new_follower" | "new_wishlist";
+type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post";
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -22,8 +22,10 @@ function formatRelativeTime(dateStr: string): string {
 const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
   reservation: <Gift className="w-5 h-5 text-emerald-600" />,
   reservation_cancel: <XCircle className="w-5 h-5 text-red-500" />,
-  new_follower: <UserPlus className="w-5 h-5 text-blue-500" />,
-  new_wishlist: <Star className="w-5 h-5 text-yellow-500" />,
+  following_new: <UserCheck className="w-5 h-5 text-emerald-600" />,
+  following_cancel: <UserMinus className="w-5 h-5 text-muted-foreground" />,
+  follower_new: <UserPlus className="w-5 h-5 text-blue-500" />,
+  following_post: <Star className="w-5 h-5 text-yellow-500" />,
 };
 
 export default async function NotificationsPage() {
@@ -114,7 +116,25 @@ export default async function NotificationsPage() {
           ),
           href: item ? `/wishlist/${item.wishlist_id}` : "/wishlists",
         };
-      case "new_follower":
+      case "following_new":
+        return {
+          text: (
+            <>
+              You started following <span className="font-semibold">@{actor?.nickname ?? "someone"}</span>!
+            </>
+          ),
+          href: actor?.nickname ? `/explore/user/${actor.nickname}` : "/explore",
+        };
+      case "following_cancel":
+        return {
+          text: (
+            <>
+              You unfollowed <span className="font-semibold">@{actor?.nickname ?? "someone"}</span>.
+            </>
+          ),
+          href: actor?.nickname ? `/explore/user/${actor.nickname}` : "/explore",
+        };
+      case "follower_new":
         return {
           text: (
             <>
@@ -123,7 +143,7 @@ export default async function NotificationsPage() {
           ),
           href: actor?.nickname ? `/explore/user/${actor.nickname}` : "/following",
         };
-      case "new_wishlist":
+      case "following_post":
         return {
           text: (
             <>

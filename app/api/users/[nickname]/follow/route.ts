@@ -30,8 +30,21 @@ export async function POST(
 
   if (existing) {
     await supabaseAdmin.from("follows").delete().eq("id", existing.id);
+    supabaseAdmin.from("notifications").insert({
+      user_id: user.id,
+      type: "following_cancel" as const,
+      actor_id: target.id,
+    }).then(({ error }) => {
+      if (error) console.error("[notification] following_cancel insert failed:", error);
+    });
   } else {
     await supabaseAdmin.from("follows").insert({ follower_id: user.id, followee_id: target.id });
+    supabaseAdmin.from("notifications").insert([
+      { user_id: user.id, type: "following_new" as const, actor_id: target.id },
+      { user_id: target.id, type: "follower_new" as const, actor_id: user.id },
+    ]).then(({ error }) => {
+      if (error) console.error("[notification] following_new/follower_new insert failed:", error);
+    });
   }
 
   const { count } = await supabaseAdmin

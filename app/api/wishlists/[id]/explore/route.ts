@@ -38,6 +38,24 @@ export async function POST(
     .update({ explore_token: token })
     .eq("id", id);
 
+  const { data: followers } = await supabaseAdmin
+    .from("follows")
+    .select("follower_id")
+    .eq("followee_id", user.id);
+
+  if (followers && followers.length > 0) {
+    supabaseAdmin.from("notifications").insert(
+      followers.map((f) => ({
+        user_id: f.follower_id,
+        type: "following_post" as const,
+        actor_id: user.id,
+        wishlist_id: id,
+      }))
+    ).then(({ error }) => {
+      if (error) console.error("[notification] following_post insert failed:", error);
+    });
+  }
+
   return NextResponse.json({ explore_token: token });
 }
 
