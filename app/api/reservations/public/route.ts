@@ -62,6 +62,16 @@ export async function POST(req: NextRequest) {
 
   if (error || !reservation) return NextResponse.json({ error: "Failed" }, { status: 500 });
 
+  supabaseAdmin.from("notifications").insert({
+    user_id: wishlist.user_id,
+    type: "reservation" as const,
+    actor_id: user?.id ?? null,
+    wish_item_id: wishItemId,
+    wishlist_id: item.wishlist_id,
+  }).then(({ error }) => {
+    if (error) console.error("[notification] reservation insert failed:", error);
+  });
+
   const recipientEmail = email?.trim() || user?.email;
   if (recipientEmail) {
     const { data: owner } = await supabaseAdmin

@@ -53,14 +53,33 @@ export default async function CancelReservationPage({
 
   const { data: item } = await supabaseAdmin
     .from("wish_items")
-    .select("title")
+    .select("title, wishlist_id")
     .eq("id", reservation.wish_item_id)
     .single();
+
+  const { data: wishlist } = item
+    ? await supabaseAdmin
+        .from("wishlists")
+        .select("id, user_id")
+        .eq("id", item.wishlist_id)
+        .single()
+    : { data: null };
 
   await supabaseAdmin
     .from("wishitem_reservations")
     .update({ cancelled_at: new Date().toISOString() })
     .eq("id", reservation.id);
+
+  if (wishlist?.user_id) {
+    const { error: notifError } = await supabaseAdmin.from("notifications").insert({
+      user_id: wishlist.user_id,
+      type: "reservation_cancel" as const,
+      actor_id: null,
+      wish_item_id: reservation.wish_item_id,
+      wishlist_id: wishlist.id,
+    });
+    if (notifError) console.error("[notification] reservation_cancel insert failed:", notifError);
+  }
 
   if (reservation.reserver_email) {
     sendReservationCancelledEmail({

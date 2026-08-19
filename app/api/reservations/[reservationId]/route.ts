@@ -52,5 +52,18 @@ export async function PATCH(
     }).catch(() => {});
   }
 
+  // 예약자가 취소한 경우에만 위시리스트 오너에게 알림
+  if (isReserver && wishlist?.user_id) {
+    supabaseAdmin.from("notifications").insert({
+      user_id: wishlist.user_id,
+      type: "reservation_cancel" as const,
+      actor_id: user.id,
+      wish_item_id: reservation.wish_item_id,
+      wishlist_id: item?.wishlist_id,
+    }).then(({ error }) => {
+      if (error) console.error("[notification] reservation_cancel insert failed:", error);
+    });
+  }
+
   return NextResponse.json({ success: true });
 }
