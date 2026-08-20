@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
 import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users } from "lucide-react";
 
-type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined";
+type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received";
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -28,6 +28,7 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
   following_post: <Star className="w-5 h-5 text-yellow-500" />,
   invite_accepted: <Users className="w-5 h-5 text-purple-500" />,
   invite_joined: <Users className="w-5 h-5 text-purple-500" />,
+  invite_received: <Users className="w-5 h-5 text-purple-500" />,
 };
 
 export default async function NotificationsPage() {
@@ -174,6 +175,19 @@ export default async function NotificationsPage() {
           text: (
             <>
               You joined <span className="font-semibold">@{actor?.nickname ?? "someone"}</span>&apos;s Inner Circle
+              {wishlist && (
+                <> for <span className="font-semibold">{wishlist.title}</span></>
+              )}
+            </>
+          ),
+          href: wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists",
+        };
+      case "invite_received":
+        return {
+          text: (
+            <>
+              You&apos;ve been invited to{" "}
+              <span className="font-semibold">@{actor?.nickname ?? "someone"}</span>&apos;s Inner Circle
               {wishlist && (
                 <> for <span className="font-semibold">{wishlist.title}</span></>
               )}

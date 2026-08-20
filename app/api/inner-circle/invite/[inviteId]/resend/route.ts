@@ -48,5 +48,22 @@ export async function POST(
     return NextResponse.json({ error: "email_failed", code: smtpCode }, { status: 500 });
   }
 
+  const { data: invitee } = await supabaseAdmin
+    .from("users")
+    .select("id")
+    .eq("email", invite.invitee_email)
+    .maybeSingle();
+
+  if (invitee) {
+    supabaseAdmin.from("notifications").insert({
+      user_id: invitee.id,
+      type: "invite_received" as const,
+      actor_id: user.id,
+      wishlist_id: wishlist.id,
+    }).then(({ error }) => {
+      if (error) console.error("[notification] invite_received insert failed:", error);
+    });
+  }
+
   return NextResponse.json({ success: true });
 }
