@@ -3,9 +3,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
-import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle } from "lucide-react";
+import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users } from "lucide-react";
 
-type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post";
+type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted";
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -26,6 +26,7 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
   following_cancel: <UserMinus className="w-5 h-5 text-muted-foreground" />,
   follower_new: <UserPlus className="w-5 h-5 text-blue-500" />,
   following_post: <Star className="w-5 h-5 text-yellow-500" />,
+  invite_accepted: <Users className="w-5 h-5 text-purple-500" />,
 };
 
 export default async function NotificationsPage() {
@@ -154,6 +155,18 @@ export default async function NotificationsPage() {
             </>
           ),
           href: wishlist?.explore_token ? `/explore/${wishlist.explore_token}` : "/explore",
+        };
+      case "invite_accepted":
+        return {
+          text: (
+            <>
+              <span className="font-semibold">@{actor?.nickname ?? "Someone"}</span> accepted your Inner Circle invite
+              {wishlist && (
+                <> for <span className="font-semibold">{wishlist.title}</span></>
+              )}
+            </>
+          ),
+          href: wishlist ? `/wishlist/${wishlist.id}/inner-circle` : "/wishlists",
         };
     }
   }
