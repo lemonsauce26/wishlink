@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
 import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users } from "lucide-react";
 
-type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted";
+type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined";
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -27,6 +27,7 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
   follower_new: <UserPlus className="w-5 h-5 text-blue-500" />,
   following_post: <Star className="w-5 h-5 text-yellow-500" />,
   invite_accepted: <Users className="w-5 h-5 text-purple-500" />,
+  invite_joined: <Users className="w-5 h-5 text-purple-500" />,
 };
 
 export default async function NotificationsPage() {
@@ -76,8 +77,8 @@ export default async function NotificationsPage() {
       ? supabaseAdmin.from("users").select("id, nickname, avatar_url").in("id", actorIds)
       : { data: [] as { id: string; nickname: string | null; avatar_url: string | null }[] },
     wishlistIds.length > 0
-      ? supabaseAdmin.from("wishlists").select("id, title, explore_token").in("id", wishlistIds)
-      : { data: [] as { id: string; title: string; explore_token: string | null }[] },
+      ? supabaseAdmin.from("wishlists").select("id, title, explore_token, share_token").in("id", wishlistIds)
+      : { data: [] as { id: string; title: string; explore_token: string | null; share_token: string }[] },
     itemIds.length > 0
       ? supabaseAdmin.from("wish_items").select("id, title, wishlist_id").in("id", itemIds)
       : { data: [] as { id: string; title: string; wishlist_id: string }[] },
@@ -167,6 +168,18 @@ export default async function NotificationsPage() {
             </>
           ),
           href: wishlist ? `/wishlist/${wishlist.id}/inner-circle` : "/wishlists",
+        };
+      case "invite_joined":
+        return {
+          text: (
+            <>
+              You joined <span className="font-semibold">@{actor?.nickname ?? "someone"}</span>&apos;s Inner Circle
+              {wishlist && (
+                <> for <span className="font-semibold">{wishlist.title}</span></>
+              )}
+            </>
+          ),
+          href: wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists",
         };
     }
   }

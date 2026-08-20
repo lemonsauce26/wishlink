@@ -50,13 +50,11 @@ export async function checkWishlistAccess({
       })
       .eq("id", invite.id);
 
-    supabaseAdmin.from("notifications").insert({
-      user_id: wishlist.user_id,
-      type: "invite_accepted" as const,
-      actor_id: userId,
-      wishlist_id: wishlist.id,
-    }).then(({ error }) => {
-      if (error) console.error("[notification] invite_accepted insert failed:", error);
+    supabaseAdmin.from("notifications").insert([
+      { user_id: wishlist.user_id, type: "invite_accepted" as const, actor_id: userId, wishlist_id: wishlist.id },
+      { user_id: userId, type: "invite_joined" as const, actor_id: wishlist.user_id, wishlist_id: wishlist.id },
+    ]).then(({ error }) => {
+      if (error) console.error("[notification] invite insert failed:", error);
     });
   }
 
