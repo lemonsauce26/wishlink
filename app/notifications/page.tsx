@@ -3,9 +3,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
-import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users, Heart } from "lucide-react";
+import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users, Heart, Copy } from "lucide-react";
 
-type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked" | "wishitem_liked";
+type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked" | "wishitem_liked" | "wishlist_copied";
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -31,6 +31,7 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
   invite_received: <Users className="w-5 h-5 text-purple-500" />,
   wishlist_liked: <Heart className="w-5 h-5 text-red-500" />,
   wishitem_liked: <Heart className="w-5 h-5 text-yellow-500" />,
+  wishlist_copied: <Copy className="w-5 h-5 text-blue-500" />,
 };
 
 export default async function NotificationsPage() {
@@ -183,6 +184,18 @@ export default async function NotificationsPage() {
             </>
           ),
           href: wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists",
+        };
+      case "wishlist_copied":
+        return {
+          text: (
+            <>
+              <span className="font-semibold">@{actor?.nickname ?? "Someone"}</span> copied your wishlist
+              {wishlist && (
+                <> <span className="font-semibold">{wishlist.title}</span></>
+              )}
+            </>
+          ),
+          href: wishlist ? `/wishlist/${wishlist.id}` : "/wishlists",
         };
       case "wishitem_liked":
         return {

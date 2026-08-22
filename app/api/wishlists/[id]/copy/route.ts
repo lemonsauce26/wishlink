@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { generateUniqueToken } from "@/lib/tokens";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -16,7 +17,7 @@ export async function POST(
   const [{ data: sourceWishlist }, { data: sourceItems }] = await Promise.all([
     supabaseAdmin
       .from("wishlists")
-      .select("title, event_type, event_date")
+      .select("user_id, title, event_type, event_date")
       .eq("id", sourceId)
       .single(),
     supabaseAdmin
@@ -28,7 +29,11 @@ export async function POST(
 
   if (!sourceWishlist) return NextResponse.json({ error: "Wishlist not found" }, { status: 404 });
 
-  const now = new Date().toISOString();
+  const [shareToken, now] = await Promise.all([
+    generateUniqueToken("share_token"),
+    Promise.resolve(new Date().toISOString()),
+  ]);
+
   const { data: newWishlist, error: createError } = await supabaseAdmin
     .from("wishlists")
     .insert({
@@ -38,6 +43,7 @@ export async function POST(
       event_date: sourceWishlist.event_date,
       visibility: "public",
       reservation_visibility: "show",
+      share_token: shareToken,
       updated_at: now,
     })
     .select("id")
@@ -65,6 +71,17 @@ export async function POST(
     copy_count: (currentStats?.copy_count ?? 0) + 1,
     item_save_count: currentStats?.item_save_count ?? 0,
   });
+
+  if (sourceWishlist.user_id !== user.id) {
+    supabaseAdmin.from("notifications").insert({
+      user_id: sourceWishlist.user_id,
+      type: "wishlist_copied" as const,
+      actor_id: user.id,
+      wishlist_id: sourceId,
+    }).then(({ error }) => {
+      if (error) console.error("[notification] wishlist_copied insert failed:", error);
+    });
+  }
 
   return NextResponse.json({ id: newWishlist.id });
 }
