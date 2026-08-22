@@ -3,9 +3,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
-import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users, Heart, Copy } from "lucide-react";
+import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users, Heart, Copy, FolderPlus } from "lucide-react";
 
-type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked" | "wishitem_liked" | "wishlist_copied";
+type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked" | "wishitem_liked" | "wishlist_copied" | "wishitem_saved";
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -32,6 +32,7 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
   wishlist_liked: <Heart className="w-5 h-5 text-red-500" />,
   wishitem_liked: <Heart className="w-5 h-5 text-yellow-500" />,
   wishlist_copied: <Copy className="w-5 h-5 text-blue-500" />,
+  wishitem_saved: <FolderPlus className="w-5 h-5 text-indigo-500" />,
 };
 
 export default async function NotificationsPage() {
@@ -184,6 +185,21 @@ export default async function NotificationsPage() {
             </>
           ),
           href: wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists",
+        };
+      case "wishitem_saved":
+        return {
+          text: (
+            <>
+              <span className="font-semibold">@{actor?.nickname ?? "Someone"}</span> saved your item
+              {item && (
+                <> <span className="font-semibold">{item.title}</span></>
+              )}
+              {itemWishlist && (
+                <> from <span className="font-semibold">{itemWishlist.title}</span></>
+              )}
+            </>
+          ),
+          href: item ? `/wishlist/${item.wishlist_id}` : "/wishlists",
         };
       case "wishlist_copied":
         return {

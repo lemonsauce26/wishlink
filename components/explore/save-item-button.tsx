@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bookmark } from "lucide-react";
+import { FolderPlus } from "lucide-react";
 import { SaveItemModal } from "@/components/explore/save-item-modal";
 import { LoginRequiredModal } from "@/components/explore/login-required-modal";
 
@@ -32,7 +32,7 @@ export function SaveItemButton({
         className="shrink-0 rounded-lg border border-border p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
         title="Save item"
       >
-        <Bookmark className="w-4 h-4" />
+        <FolderPlus className="w-4 h-4" />
       </button>
 
       {showSaveModal && (

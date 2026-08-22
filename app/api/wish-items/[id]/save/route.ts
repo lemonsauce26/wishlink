@@ -59,5 +59,19 @@ export async function POST(
     copy_count: currentStats?.copy_count ?? 0,
   });
 
+  supabaseAdmin.from("wishlists").select("user_id").eq("id", sourceItem.wishlist_id).single()
+    .then(({ data: sourceWishlist }) => {
+      if (!sourceWishlist || sourceWishlist.user_id === user.id) return;
+      supabaseAdmin.from("notifications").insert({
+        user_id: sourceWishlist.user_id,
+        type: "wishitem_saved" as const,
+        actor_id: user.id,
+        wishlist_id: sourceItem.wishlist_id,
+        wish_item_id: itemId,
+      }).then(({ error }) => {
+        if (error) console.error("[notification] wishitem_saved insert failed:", error);
+      });
+    });
+
   return NextResponse.json({ success: true });
 }
