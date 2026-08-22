@@ -3,9 +3,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
-import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users } from "lucide-react";
+import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users, Heart } from "lucide-react";
 
-type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received";
+type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked";
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -29,6 +29,7 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
   invite_accepted: <Users className="w-5 h-5 text-purple-500" />,
   invite_joined: <Users className="w-5 h-5 text-purple-500" />,
   invite_received: <Users className="w-5 h-5 text-purple-500" />,
+  wishlist_liked: <Heart className="w-5 h-5 text-red-500" />,
 };
 
 export default async function NotificationsPage() {
@@ -181,6 +182,18 @@ export default async function NotificationsPage() {
             </>
           ),
           href: wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists",
+        };
+      case "wishlist_liked":
+        return {
+          text: (
+            <>
+              <span className="font-semibold">@{actor?.nickname ?? "Someone"}</span> liked your wishlist
+              {wishlist && (
+                <> <span className="font-semibold">{wishlist.title}</span></>
+              )}
+            </>
+          ),
+          href: wishlist?.explore_token ? `/explore/${wishlist.explore_token}` : "/wishlists",
         };
       case "invite_received":
         return {
