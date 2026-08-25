@@ -112,3 +112,18 @@ export async function GET() {
 
   return NextResponse.json({ notifications: result });
 }
+
+export async function PATCH(req: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await req.json();
+  await supabaseAdmin
+    .from("notifications")
+    .update({ read: true })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  return NextResponse.json({ success: true });
+}
