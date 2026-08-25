@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
-import { NotificationBell } from "@/components/layout/notification-bell";
+import { NotificationDropdown } from "@/components/layout/notification-dropdown";
 import { MobileNav } from "@/components/layout/mobile-side-nav";
 import Link from "next/link";
 
@@ -43,7 +43,7 @@ export async function AppHeader({ badge, mobileNavVariant }: { badge?: string; m
           )}
         </div>
         <div className="flex items-center px-4">
-          {user && <NotificationBell unreadCount={unreadCount} />}
+          {user && <NotificationDropdown unreadCount={unreadCount} />}
           {user ? (
             <HeaderUserMenu displayName={displayName ?? ""} avatarUrl={avatarUrl} />
           ) : (
