@@ -315,6 +315,34 @@ export type Database = {
         };
         Relationships: [];
       };
+      cron_job_logs: {
+        Row: {
+          id: string;
+          cron_job_id: string;
+          started_at: string;
+          finished_at: string | null;
+          status: "running" | "success" | "failed" | "skipped";
+          triggered_by: "schedule" | "manual";
+          message: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          cron_job_id: string;
+          started_at?: string;
+          finished_at?: string | null;
+          status: "running" | "success" | "failed" | "skipped";
+          triggered_by: "schedule" | "manual";
+          message?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          finished_at?: string | null;
+          status?: "running" | "success" | "failed" | "skipped";
+          message?: string | null;
+        };
+        Relationships: [];
+      };
       cron_jobs: {
         Row: {
           id: string;

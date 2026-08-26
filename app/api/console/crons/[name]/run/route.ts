@@ -21,7 +21,7 @@ export async function POST(
   if (me?.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   try {
-    await runCron(name, { force: true });
+    await runCron(name, { force: true, triggeredBy: "manual" });
     return NextResponse.json({ ok: true });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";

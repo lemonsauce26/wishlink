@@ -10,6 +10,33 @@ export default async function ConsolecronsPage() {
 
   const list = jobs ?? [];
 
+  const logsByJobId: Record<string, {
+    id: string;
+    cron_job_id: string;
+    started_at: string;
+    finished_at: string | null;
+    status: "running" | "success" | "failed" | "skipped";
+    triggered_by: "schedule" | "manual";
+    message: string | null;
+  }[]> = {};
+
+  if (list.length > 0) {
+    const jobIds = list.map((j) => j.id);
+    const { data: logs } = await supabaseAdmin
+      .from("cron_job_logs")
+      .select("*")
+      .in("cron_job_id", jobIds)
+      .order("started_at", { ascending: false })
+      .limit(jobIds.length * 5);
+
+    for (const log of logs ?? []) {
+      if (!logsByJobId[log.cron_job_id]) logsByJobId[log.cron_job_id] = [];
+      if (logsByJobId[log.cron_job_id].length < 5) {
+        logsByJobId[log.cron_job_id].push(log);
+      }
+    }
+  }
+
   return (
     <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       <div className="space-y-1">
@@ -28,7 +55,7 @@ export default async function ConsolecronsPage() {
       ) : (
         <div className="space-y-3">
           {list.map((job) => (
-            <CronJobCard key={job.name} job={job} />
+            <CronJobCard key={job.id} job={job} logs={logsByJobId[job.id] ?? []} />
           ))}
         </div>
       )}
