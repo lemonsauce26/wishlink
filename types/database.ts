@@ -373,7 +373,7 @@ export type Database = {
         Row: {
           id: string;
           user_id: string;
-          type: "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked" | "wishitem_liked" | "wishlist_copied" | "wishitem_saved";
+          type: "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked" | "wishitem_liked" | "wishlist_copied" | "wishitem_saved" | "event_reminder_7" | "event_reminder_3" | "event_reminder_0";
           actor_id: string | null;
           wishlist_id: string | null;
           wish_item_id: string | null;
@@ -383,7 +383,7 @@ export type Database = {
         Insert: {
           id?: string;
           user_id: string;
-          type: "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked" | "wishitem_liked" | "wishlist_copied" | "wishitem_saved";
+          type: "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked" | "wishitem_liked" | "wishlist_copied" | "wishitem_saved" | "event_reminder_7" | "event_reminder_3" | "event_reminder_0";
           actor_id?: string | null;
           wishlist_id?: string | null;
           wish_item_id?: string | null;

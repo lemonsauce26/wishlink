@@ -3,9 +3,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
-import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users, Heart, Copy, FolderPlus } from "lucide-react";
+import { Bell, Gift, UserPlus, UserMinus, UserCheck, Star, XCircle, Users, Heart, Copy, FolderPlus, Calendar } from "lucide-react";
 
-type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked" | "wishitem_liked" | "wishlist_copied" | "wishitem_saved";
+type NotificationType = "reservation" | "reservation_cancel" | "following_new" | "following_cancel" | "follower_new" | "following_post" | "invite_accepted" | "invite_joined" | "invite_received" | "wishlist_liked" | "wishitem_liked" | "wishlist_copied" | "wishitem_saved" | "event_reminder_7" | "event_reminder_3" | "event_reminder_0";
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -33,6 +33,9 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
   wishitem_liked: <Heart className="w-5 h-5 text-yellow-500" />,
   wishlist_copied: <Copy className="w-5 h-5 text-blue-500" />,
   wishitem_saved: <FolderPlus className="w-5 h-5 text-indigo-500" />,
+  event_reminder_7: <Calendar className="w-5 h-5 text-orange-500" />,
+  event_reminder_3: <Calendar className="w-5 h-5 text-orange-500" />,
+  event_reminder_0: <Calendar className="w-5 h-5 text-red-500" />,
 };
 
 export default async function NotificationsPage() {
@@ -249,6 +252,46 @@ export default async function NotificationsPage() {
               {wishlist && (
                 <> for <span className="font-semibold">{wishlist.title}</span></>
               )}
+            </>
+          ),
+          href: wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists",
+        };
+      case "event_reminder_7":
+        return {
+          text: (
+            <>
+              <span className="font-semibold">@{actor?.nickname ?? "Someone"}</span>&apos;s event
+              {wishlist && (
+                <> <span className="font-semibold">{wishlist.title}</span></>
+              )}{" "}
+              is in 7 days — you haven&apos;t made a reservation yet.
+            </>
+          ),
+          href: wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists",
+        };
+      case "event_reminder_3":
+        return {
+          text: (
+            <>
+              <span className="font-semibold">@{actor?.nickname ?? "Someone"}</span>&apos;s event
+              {wishlist && (
+                <> <span className="font-semibold">{wishlist.title}</span></>
+              )}{" "}
+              is in 3 days — you haven&apos;t made a reservation yet.
+            </>
+          ),
+          href: wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists",
+        };
+      case "event_reminder_0":
+        return {
+          text: (
+            <>
+              Today is{" "}
+              <span className="font-semibold">@{actor?.nickname ?? "Someone"}</span>&apos;s event
+              {wishlist && (
+                <> <span className="font-semibold">{wishlist.title}</span></>
+              )}
+              {" "}— you haven&apos;t made a reservation yet.
             </>
           ),
           href: wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists",

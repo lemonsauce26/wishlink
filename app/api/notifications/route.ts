@@ -6,7 +6,8 @@ type NotificationType =
   | "reservation" | "reservation_cancel"
   | "following_new" | "following_cancel" | "follower_new" | "following_post"
   | "invite_accepted" | "invite_joined" | "invite_received"
-  | "wishlist_liked" | "wishitem_liked" | "wishlist_copied" | "wishitem_saved";
+  | "wishlist_liked" | "wishitem_liked" | "wishlist_copied" | "wishitem_saved"
+  | "event_reminder_7" | "event_reminder_3" | "event_reminder_0";
 
 export async function GET() {
   const supabase = await createClient();
@@ -104,6 +105,18 @@ export async function GET() {
       case "wishitem_saved":
         text = `@${actor?.nickname ?? "Someone"} saved your item${item ? ` ${item.title}` : ""}${itemWishlist ? ` from ${itemWishlist.title}` : ""}`;
         href = item ? `/wishlist/${item.wishlist_id}` : "/wishlists";
+        break;
+      case "event_reminder_7":
+        text = `@${actor?.nickname ?? "Someone"}'s event${wishlist ? ` ${wishlist.title}` : ""} is in 7 days — you haven't made a reservation yet.`;
+        href = wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists";
+        break;
+      case "event_reminder_3":
+        text = `@${actor?.nickname ?? "Someone"}'s event${wishlist ? ` ${wishlist.title}` : ""} is in 3 days — you haven't made a reservation yet.`;
+        href = wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists";
+        break;
+      case "event_reminder_0":
+        text = `Today is @${actor?.nickname ?? "Someone"}'s event${wishlist ? ` ${wishlist.title}` : ""} — you haven't made a reservation yet.`;
+        href = wishlist?.share_token ? `/share/${wishlist.share_token}` : "/wishlists";
         break;
     }
 
