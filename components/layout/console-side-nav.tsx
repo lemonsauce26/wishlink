@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Flag } from "lucide-react";
+import { LayoutDashboard, Flag, Timer } from "lucide-react";
 
 const navItems = [
   { href: "/console/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/console/reports", icon: Flag, label: "Reports" },
+  { href: "/console/crons", icon: Timer, label: "Crons" },
 ];
 
 export function ConsoleSideNav() {

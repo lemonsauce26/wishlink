@@ -315,6 +315,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      cron_jobs: {
+        Row: {
+          id: string;
+          name: string;
+          description: string;
+          schedule: string;
+          enabled: boolean;
+          last_run_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description: string;
+          schedule: string;
+          enabled?: boolean;
+          last_run_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          enabled?: boolean;
+          schedule?: string;
+          last_run_at?: string | null;
+        };
+        Relationships: [];
+      };
       notifications: {
         Row: {
           id: string;
