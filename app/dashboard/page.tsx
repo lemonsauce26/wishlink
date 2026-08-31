@@ -53,21 +53,16 @@ export default async function DashboardPage() {
 
   const myItemIds = (allItems ?? []).map((i) => i.id);
 
-  const [{ data: wishlistLikes }, { data: wishlistStatsRows }, { data: reservationsReceived }] =
+  const [{ data: wishlistLikes }, { data: wishlistStatsRows }, { data: wishitemLikes }] =
     await Promise.all([
       wishlistIds.length > 0
         ? supabaseAdmin.from("wishlist_likes").select("wishlist_id").in("wishlist_id", wishlistIds)
         : Promise.resolve({ data: [] as { wishlist_id: string }[] }),
       wishlistIds.length > 0
-        ? supabaseAdmin.from("wishlist_stats").select("wishlist_id, item_save_count").in("wishlist_id", wishlistIds)
-        : Promise.resolve({ data: [] as { wishlist_id: string; item_save_count: number }[] }),
+        ? supabaseAdmin.from("wishlist_stats").select("wishlist_id, item_save_count, copy_count").in("wishlist_id", wishlistIds)
+        : Promise.resolve({ data: [] as { wishlist_id: string; item_save_count: number; copy_count: number }[] }),
       myItemIds.length > 0
-        ? supabaseAdmin
-            .from("wishitem_reservations")
-            .select("wish_item_id")
-            .in("wish_item_id", myItemIds)
-            .eq("reserved_by_owner", false)
-            .is("cancelled_at", null)
+        ? supabaseAdmin.from("wishitem_likes").select("wish_item_id").in("wish_item_id", myItemIds)
         : Promise.resolve({ data: [] as { wish_item_id: string }[] }),
     ]);
 
@@ -77,13 +72,11 @@ export default async function DashboardPage() {
   const visibleItemIds = new Set(
     (allItems ?? []).filter((i) => visibleExploreIds.has(i.wishlist_id)).map((i) => i.id)
   );
-  const totalLikes = (wishlistLikes ?? []).filter((l) => visibleExploreIds.has(l.wishlist_id)).length;
-  const totalItemSaves = (wishlistStatsRows ?? [])
-    .filter((s) => visibleExploreIds.has(s.wishlist_id))
-    .reduce((sum, s) => sum + (s.item_save_count ?? 0), 0);
-  const totalReservationsReceived = (reservationsReceived ?? []).filter((r) =>
-    visibleItemIds.has(r.wish_item_id)
-  ).length;
+  const totalWishlistLikes = (wishlistLikes ?? []).filter((l) => visibleExploreIds.has(l.wishlist_id)).length;
+  const totalWishitemLikes = (wishitemLikes ?? []).filter((l) => visibleItemIds.has(l.wish_item_id)).length;
+  const visibleStats = (wishlistStatsRows ?? []).filter((s) => visibleExploreIds.has(s.wishlist_id));
+  const totalItemSaves = visibleStats.reduce((sum, s) => sum + (s.item_save_count ?? 0), 0);
+  const totalWishlistCopies = visibleStats.reduce((sum, s) => sum + (s.copy_count ?? 0), 0);
 
   const likeCountMap: Record<string, number> = {};
   for (const like of wishlistLikes ?? []) {
@@ -358,18 +351,22 @@ export default async function DashboardPage() {
         <section className="rounded-2xl border border-border p-5 space-y-4">
           <h2 className="font-semibold text-base">My Explore Posts</h2>
 
-          <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border overflow-hidden">
+          <div className="grid grid-cols-4 divide-x divide-border rounded-xl border border-border overflow-hidden">
             <div className="px-4 py-3 text-center">
-              <p className="text-xl font-bold tabular-nums">{totalLikes}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Likes</p>
+              <p className="text-xl font-bold tabular-nums">{totalWishlistLikes}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Wishlist Likes</p>
             </div>
             <div className="px-4 py-3 text-center">
-              <p className="text-xl font-bold tabular-nums">{totalReservationsReceived}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Reserved</p>
+              <p className="text-xl font-bold tabular-nums">{totalWishitemLikes}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Wishitem Likes</p>
+            </div>
+            <div className="px-4 py-3 text-center">
+              <p className="text-xl font-bold tabular-nums">{totalWishlistCopies}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Wishlist Copied</p>
             </div>
             <div className="px-4 py-3 text-center">
               <p className="text-xl font-bold tabular-nums">{totalItemSaves}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Saved</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Wishitem Copied</p>
             </div>
           </div>
 
