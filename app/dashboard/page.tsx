@@ -59,8 +59,8 @@ export default async function DashboardPage() {
         ? supabaseAdmin.from("wishlist_likes").select("wishlist_id").in("wishlist_id", wishlistIds)
         : Promise.resolve({ data: [] as { wishlist_id: string }[] }),
       wishlistIds.length > 0
-        ? supabaseAdmin.from("wishlist_stats").select("wishlist_id, item_save_count, copy_count").in("wishlist_id", wishlistIds)
-        : Promise.resolve({ data: [] as { wishlist_id: string; item_save_count: number; copy_count: number }[] }),
+        ? supabaseAdmin.from("wishlist_stats").select("wishlist_id, item_copy_count, copy_count").in("wishlist_id", wishlistIds)
+        : Promise.resolve({ data: [] as { wishlist_id: string; item_copy_count: number; copy_count: number }[] }),
       myItemIds.length > 0
         ? supabaseAdmin.from("wishitem_likes").select("wish_item_id").in("wish_item_id", myItemIds)
         : Promise.resolve({ data: [] as { wish_item_id: string }[] }),
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
   const totalWishlistLikes = (wishlistLikes ?? []).filter((l) => visibleExploreIds.has(l.wishlist_id)).length;
   const totalWishitemLikes = (wishitemLikes ?? []).filter((l) => visibleItemIds.has(l.wish_item_id)).length;
   const visibleStats = (wishlistStatsRows ?? []).filter((s) => visibleExploreIds.has(s.wishlist_id));
-  const totalItemSaves = visibleStats.reduce((sum, s) => sum + (s.item_save_count ?? 0), 0);
+  const totalItemSaves = visibleStats.reduce((sum, s) => sum + (s.item_copy_count ?? 0), 0);
   const totalWishlistCopies = visibleStats.reduce((sum, s) => sum + (s.copy_count ?? 0), 0);
 
   const likeCountMap: Record<string, number> = {};

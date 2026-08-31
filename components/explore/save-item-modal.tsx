@@ -54,7 +54,7 @@ export function SaveItemModal({
       <div className="absolute inset-0 bg-black/60" />
       <div className="relative z-10 w-full sm:max-w-sm bg-background rounded-t-2xl sm:rounded-2xl border border-border shadow-xl p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-base">Save to wishlist</h2>
+          <h2 className="font-semibold text-base">Copy to wishlist</h2>
           <button
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground text-xl leading-none"
@@ -87,7 +87,7 @@ export function SaveItemModal({
                   >
                     <span>{emoji}</span>
                     <span className="flex-1 truncate font-medium">{wl.title}</span>
-                    {isSaved && <span className="text-xs">Saved ✓</span>}
+                    {isSaved && <span className="text-xs">Copied ✓</span>}
                   </button>
                 </li>
               );

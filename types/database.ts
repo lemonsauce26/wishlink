@@ -191,16 +191,16 @@ export type Database = {
         Row: {
           wishlist_id: string;
           copy_count: number;
-          item_save_count: number;
+          item_copy_count: number;
         };
         Insert: {
           wishlist_id: string;
           copy_count?: number;
-          item_save_count?: number;
+          item_copy_count?: number;
         };
         Update: {
           copy_count?: number;
-          item_save_count?: number;
+          item_copy_count?: number;
         };
         Relationships: [];
       };

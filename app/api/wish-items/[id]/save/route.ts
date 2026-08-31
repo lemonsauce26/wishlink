@@ -49,13 +49,13 @@ export async function POST(
 
   const { data: currentStats } = await supabaseAdmin
     .from("wishlist_stats")
-    .select("item_save_count, copy_count")
+    .select("item_copy_count, copy_count")
     .eq("wishlist_id", sourceItem.wishlist_id)
     .maybeSingle();
 
   await supabaseAdmin.from("wishlist_stats").upsert({
     wishlist_id: sourceItem.wishlist_id,
-    item_save_count: (currentStats?.item_save_count ?? 0) + 1,
+    item_copy_count: (currentStats?.item_copy_count ?? 0) + 1,
     copy_count: currentStats?.copy_count ?? 0,
   });
 

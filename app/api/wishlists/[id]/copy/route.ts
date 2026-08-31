@@ -62,14 +62,14 @@ export async function POST(
 
   const { data: currentStats } = await supabaseAdmin
     .from("wishlist_stats")
-    .select("copy_count, item_save_count")
+    .select("copy_count, item_copy_count")
     .eq("wishlist_id", sourceId)
     .maybeSingle();
 
   await supabaseAdmin.from("wishlist_stats").upsert({
     wishlist_id: sourceId,
     copy_count: (currentStats?.copy_count ?? 0) + 1,
-    item_save_count: currentStats?.item_save_count ?? 0,
+    item_copy_count: currentStats?.item_copy_count ?? 0,
   });
 
   if (sourceWishlist.user_id !== user.id) {

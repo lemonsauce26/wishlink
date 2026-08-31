@@ -69,7 +69,7 @@ export default async function ExploreUserPage({
           supabaseAdmin.from("wishlist_likes").select("wishlist_id").in("wishlist_id", wishlistIds),
           supabaseAdmin
             .from("wishlist_stats")
-            .select("wishlist_id, copy_count, item_save_count")
+            .select("wishlist_id, copy_count, item_copy_count")
             .in("wishlist_id", wishlistIds),
         ])
       : [{ data: [] }, { data: [] }];
@@ -141,7 +141,7 @@ export default async function ExploreUserPage({
                 itemCount={itemCountMap[wl.id] ?? 0}
                 previewItems={previewMap[wl.id] ?? []}
                 likeCount={likeCountMap[wl.id] ?? 0}
-                saveCount={statsMap[wl.id]?.item_save_count ?? 0}
+                saveCount={statsMap[wl.id]?.item_copy_count ?? 0}
                 copyCount={statsMap[wl.id]?.copy_count ?? 0}
               />
             ))}

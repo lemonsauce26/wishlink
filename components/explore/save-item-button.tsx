@@ -30,7 +30,7 @@ export function SaveItemButton({
       <button
         onClick={handleClick}
         className="shrink-0 rounded-lg border border-border p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-        title="Save item"
+        title="Copy item"
       >
         <FolderPlus className="w-4 h-4" />
       </button>
