@@ -115,17 +115,27 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
 
         {/* Items */}
         {(items ?? []).length === 0 ? (
-          <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">
-            <p className="text-4xl">📦</p>
-            <p className="font-medium">No items yet</p>
+          <div className="space-y-3">
             {isOwner && (
-              <Link
-                href={`/wishlist/${wishlist.id}/item/new`}
-                className="inline-block mt-1 text-sm font-medium text-foreground underline underline-offset-4 hover:opacity-70 transition-opacity"
-              >
-                Add your first item
-              </Link>
+              <div className="flex justify-end gap-2">
+                <Link
+                  href={`/wishlist/${wishlist.id}/item/new`}
+                  className="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
+                >
+                  + Add
+                </Link>
+                <Link
+                  href={`/wishlist/${wishlist.id}/recommend`}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+                >
+                  ✨ AI Ideas
+                </Link>
+              </div>
             )}
+            <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">
+              <p className="text-4xl">📦</p>
+              <p className="font-medium">No items yet</p>
+            </div>
           </div>
         ) : (
           <WishItemList items={items ?? []} wishlistId={wishlist.id} isOwner={isOwner} reservationCountMap={reservationCountMap} reservationVisibility={wishlist.reservation_visibility} />
