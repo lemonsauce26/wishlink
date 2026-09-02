@@ -30,7 +30,7 @@ export default async function RecommendPage({
     <AppShell>
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">✨ AI Gift Ideas</h1>
+          <h1 className="text-2xl font-bold">AI Gift Ideas</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Personalized suggestions based on your wishlist
           </p>

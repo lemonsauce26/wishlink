@@ -122,7 +122,7 @@ export function AiRecommendClient({ wishlistId, wishlistTitle, ageGroup = "", ge
             <div className="flex gap-2">
               <Link
                 href={`/wishlist/${wishlistId}/item/new?title=${encodeURIComponent(rec.name)}`}
-                className="flex-1 flex items-center justify-center rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
+                className="flex-1 flex items-center justify-center rounded-lg border border-emerald-600 text-emerald-600 px-4 py-2 text-sm font-medium hover:bg-emerald-600/10 transition-colors"
               >
                 + Quick Add
               </Link>
