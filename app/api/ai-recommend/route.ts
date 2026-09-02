@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { wishlistId } = await req.json();
+  const { wishlistId, excludedItems } = await req.json();
   if (!wishlistId) return NextResponse.json({ error: "wishlistId required" }, { status: 400 });
 
   const { data: wishlist } = await supabase
@@ -56,8 +56,12 @@ export async function POST(req: NextRequest) {
       ? `Already on the wishlist: ${existingItems.map((t) => `"${t}"`).join(", ")}`
       : `No items yet.`,
     ``,
-    `Recommend exactly 5 thoughtful, specific gift ideas that complement this wishlist.`,
+    `Recommend exactly 10 thoughtful, specific gift ideas that complement this wishlist.`,
     `Avoid duplicating existing items. Keep names short (3-5 words max).`,
+    ``,
+    ...(excludedItems?.length > 0
+      ? [`The user strongly dislikes these — do not suggest them or similar items: ${excludedItems.map((i: string) => `"${i}"`).join(", ")}`]
+      : []),
     ``,
     `Return ONLY a valid JSON array, no markdown, no explanation:`,
     `[{"name":"...","description":"One sentence about why this is a great gift.","searchQuery":"short search terms"}]`,
@@ -66,9 +70,9 @@ export async function POST(req: NextRequest) {
   let raw = "";
   try {
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "qwen/qwen3.8-27b",
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 1024,
+      max_tokens: 2048,
     });
     raw = completion.choices[0]?.message?.content ?? "";
   } catch (e) {
