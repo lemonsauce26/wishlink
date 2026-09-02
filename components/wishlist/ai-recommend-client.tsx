@@ -21,9 +21,12 @@ const STORES = [
 type Props = {
   wishlistId: string;
   wishlistTitle: string;
+  ageGroup?: string;
+  gender?: string;
+  eventType?: string;
 };
 
-export function AiRecommendClient({ wishlistId, wishlistTitle }: Props) {
+export function AiRecommendClient({ wishlistId, wishlistTitle, ageGroup = "", gender = "", eventType = "" }: Props) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [excluded, setExcluded] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +39,7 @@ export function AiRecommendClient({ wishlistId, wishlistTitle }: Props) {
     fetch("/api/ai-recommend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wishlistId, excludedItems: excluded }),
+      body: JSON.stringify({ wishlistId, excludedItems: excluded, ageGroup, gender, eventType }),
     })
       .then((res) => res.json())
       .then((data) => {

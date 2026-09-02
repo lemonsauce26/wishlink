@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { WishItemCard } from "./wish-item-card";
+import { AiIdeasModal } from "./ai-ideas-modal";
 
 type WishItem = {
   id: string;
@@ -42,10 +43,14 @@ type Props = {
   isOwner?: boolean;
   reservationCountMap?: Record<string, number>;
   reservationVisibility?: string;
+  eventType?: string;
+  userAgeGroup?: string;
+  userGender?: string;
 };
 
-export function WishItemList({ items, wishlistId, isOwner = false, reservationCountMap = {}, reservationVisibility }: Props) {
+export function WishItemList({ items, wishlistId, isOwner = false, reservationCountMap = {}, reservationVisibility, eventType = "", userAgeGroup = "", userGender = "" }: Props) {
   const [sort, setSort] = useState<SortOption>("priority");
+  const [showAiModal, setShowAiModal] = useState(false);
   const sorted = sortItems(items, sort);
 
   return (
@@ -59,12 +64,21 @@ export function WishItemList({ items, wishlistId, isOwner = false, reservationCo
             >
               + Add
             </Link>
-            <Link
-              href={`/wishlist/${wishlistId}/recommend`}
+            <button
+              onClick={() => setShowAiModal(true)}
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
             >
               ✨ AI Ideas
-            </Link>
+            </button>
+            {showAiModal && (
+              <AiIdeasModal
+                wishlistId={wishlistId}
+                eventType={eventType}
+                initialAgeGroup={userAgeGroup}
+                initialGender={userGender}
+                onClose={() => setShowAiModal(false)}
+              />
+            )}
           </div>
         )}
         <select
@@ -78,15 +92,22 @@ export function WishItemList({ items, wishlistId, isOwner = false, reservationCo
           <option value="price_desc">Sort: Price ↓</option>
         </select>
       </div>
-      {sorted.map((item) => (
-        <WishItemCard
-          key={item.id}
-          item={item}
-          isOwner={isOwner}
-          reservationCount={reservationCountMap[item.id] ?? 0}
-          reservationVisibility={reservationVisibility}
-        />
-      ))}
+      {items.length === 0 ? (
+        <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">
+          <p className="text-4xl">📦</p>
+          <p className="font-medium">No items yet</p>
+        </div>
+      ) : (
+        sorted.map((item) => (
+          <WishItemCard
+            key={item.id}
+            item={item}
+            isOwner={isOwner}
+            reservationCount={reservationCountMap[item.id] ?? 0}
+            reservationVisibility={reservationVisibility}
+          />
+        ))
+      )}
     </div>
   );
 }

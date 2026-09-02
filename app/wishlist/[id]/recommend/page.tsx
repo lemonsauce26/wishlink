@@ -3,8 +3,15 @@ import { redirect, notFound } from "next/navigation";
 import { AiRecommendClient } from "@/components/wishlist/ai-recommend-client";
 import { AppShell } from "@/components/layout/app-shell";
 
-export default async function RecommendPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function RecommendPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ ageGroup?: string; gender?: string; eventType?: string }>;
+}) {
   const { id } = await params;
+  const { ageGroup, gender, eventType } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -29,7 +36,13 @@ export default async function RecommendPage({ params }: { params: Promise<{ id: 
           </p>
         </div>
 
-        <AiRecommendClient wishlistId={id} wishlistTitle={wishlist.title} />
+        <AiRecommendClient
+          wishlistId={id}
+          wishlistTitle={wishlist.title}
+          ageGroup={ageGroup ?? ""}
+          gender={gender ?? ""}
+          eventType={eventType ?? ""}
+        />
       </main>
     </AppShell>
   );

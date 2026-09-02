@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { WishItemList } from "@/components/wishlist/wish-item-list";
@@ -56,9 +57,10 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
     .eq("wishlist_id", id)
     .order("created_at", { ascending: false });
 
-  const reservationCountMap = isOwner
-    ? await getReservationCountMap((items ?? []).map((i) => i.id))
-    : {};
+  const [reservationCountMap, userProfile] = await Promise.all([
+    isOwner ? getReservationCountMap((items ?? []).map((i) => i.id)) : Promise.resolve({}),
+    isOwner ? supabaseAdmin.from("users").select("age_group, gender").eq("id", user.id).single().then(r => r.data) : Promise.resolve(null),
+  ]);
 
   const emoji = EVENT_EMOJI[wishlist.event_type] ?? "🎁";
   const date = wishlist.event_date
@@ -114,32 +116,16 @@ export default async function WishlistDetailPage({ params }: { params: Promise<{
         </div>
 
         {/* Items */}
-        {(items ?? []).length === 0 ? (
-          <div className="space-y-3">
-            {isOwner && (
-              <div className="flex justify-end gap-2">
-                <Link
-                  href={`/wishlist/${wishlist.id}/item/new`}
-                  className="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors"
-                >
-                  + Add
-                </Link>
-                <Link
-                  href={`/wishlist/${wishlist.id}/recommend`}
-                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
-                >
-                  ✨ AI Ideas
-                </Link>
-              </div>
-            )}
-            <div className="rounded-xl border border-border p-10 text-center text-muted-foreground space-y-3">
-              <p className="text-4xl">📦</p>
-              <p className="font-medium">No items yet</p>
-            </div>
-          </div>
-        ) : (
-          <WishItemList items={items ?? []} wishlistId={wishlist.id} isOwner={isOwner} reservationCountMap={reservationCountMap} reservationVisibility={wishlist.reservation_visibility} />
-        )}
+        <WishItemList
+          items={items ?? []}
+          wishlistId={wishlist.id}
+          isOwner={isOwner}
+          reservationCountMap={reservationCountMap}
+          reservationVisibility={wishlist.reservation_visibility}
+          eventType={wishlist.event_type}
+          userAgeGroup={userProfile?.age_group ?? ""}
+          userGender={userProfile?.gender ?? ""}
+        />
       </main>
     </AppShell>
   );
