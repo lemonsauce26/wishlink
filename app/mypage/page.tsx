@@ -14,7 +14,7 @@ export default async function MyPage() {
 
   const { data: profile } = await supabaseAdmin
     .from("users")
-    .select("display_name, nickname, email, avatar_url, created_at")
+    .select("display_name, nickname, email, avatar_url, created_at, age_group, gender")
     .eq("id", user.id)
     .single();
 
@@ -37,6 +37,8 @@ export default async function MyPage() {
           email={profile?.email ?? user.email ?? ""}
           avatarUrl={profile?.avatar_url ?? null}
           joinedAt={joinedAt}
+          initialAgeGroup={profile?.age_group ?? ""}
+          initialGender={profile?.gender ?? ""}
         />
       </main>
     </AppShell>

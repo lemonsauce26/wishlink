@@ -10,16 +10,18 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { display_name, avatar_url } = body;
+  const { display_name, avatar_url, age_group, gender } = body;
 
-  if (!display_name?.trim() && !avatar_url)
+  if (!display_name?.trim() && !avatar_url && age_group === undefined && gender === undefined)
     return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
 
-  const updates: { display_name?: string; avatar_url?: string; updated_at: string } = {
+  const updates: { display_name?: string; avatar_url?: string; age_group?: string | null; gender?: string | null; updated_at: string } = {
     updated_at: new Date().toISOString(),
   };
   if (display_name?.trim()) updates.display_name = display_name.trim();
   if (avatar_url) updates.avatar_url = avatar_url;
+  if (age_group !== undefined) updates.age_group = age_group || null;
+  if (gender !== undefined) updates.gender = gender || null;
 
   const { error } = await supabaseAdmin
     .from("users")

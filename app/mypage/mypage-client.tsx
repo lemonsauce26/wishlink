@@ -15,6 +15,8 @@ type Props = {
   email: string;
   avatarUrl: string | null;
   joinedAt: string | null;
+  initialAgeGroup: string;
+  initialGender: string;
 };
 
 type ResultModal = { success: boolean; message: string };
@@ -26,8 +28,12 @@ export function MyPageClient({
   email,
   avatarUrl: initialAvatarUrl,
   joinedAt,
+  initialAgeGroup,
+  initialGender,
 }: Props) {
   const [nickname, setNickname] = useState(initialNickname);
+  const [ageGroup, setAgeGroup] = useState(initialAgeGroup);
+  const [gender, setGender] = useState(initialGender);
   const [checked, setChecked] = useState<"available" | "taken" | null>(null);
   const [checking, setChecking] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
@@ -44,7 +50,8 @@ export function MyPageClient({
 
   const isValidFormat = NICKNAME_REGEX.test(nickname.trim());
   const nicknameChanged = nickname.trim() !== initialNickname;
-  const canSave = nicknameChanged && checked === "available";
+  const profileChanged = ageGroup !== initialAgeGroup || gender !== initialGender;
+  const canSave = (!nicknameChanged || checked === "available") && (nicknameChanged || profileChanged);
 
   function handleNicknameChange(e: React.ChangeEvent<HTMLInputElement>) {
     setNickname(e.target.value);
@@ -69,22 +76,40 @@ export function MyPageClient({
     if (!canSave || saving) return;
     setSaving(true);
 
-    const res = await fetch("/api/users/nickname", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nickname: nickname.trim() }),
-    });
+    const requests: Promise<Response>[] = [];
 
+    if (nicknameChanged && checked === "available") {
+      requests.push(fetch("/api/users/nickname", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nickname: nickname.trim() }),
+      }));
+    }
+
+    if (profileChanged) {
+      requests.push(fetch("/api/users/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ age_group: ageGroup, gender }),
+      }));
+    }
+
+    const results = await Promise.all(requests);
     setSaving(false);
-    if (res.status === 409) {
+
+    const nickRes = nicknameChanged ? results[0] : null;
+    if (nickRes?.status === 409) {
       setChecked("taken");
       setResultModal({ success: false, message: "This nickname is already taken." });
-    } else if (!res.ok) {
-      setResultModal({ success: false, message: "Failed to update nickname. Please try again." });
-    } else {
-      setResultModal({ success: true, message: "Your nickname has been updated." });
-      router.refresh();
+      return;
     }
+    if (results.some((r) => !r.ok)) {
+      setResultModal({ success: false, message: "Failed to update. Please try again." });
+      return;
+    }
+
+    setResultModal({ success: true, message: "Your profile has been updated." });
+    router.refresh();
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -190,6 +215,42 @@ export function MyPageClient({
           {checked === "taken" && (
             <p className="text-xs text-destructive font-medium">✗ Already taken</p>
           )}
+        </div>
+
+        {/* Age group & Gender */}
+        <div className="space-y-3 rounded-xl border border-border p-4 bg-secondary/40">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Personal Info</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Age group</label>
+              <select
+                value={ageGroup}
+                onChange={(e) => setAgeGroup(e.target.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">Select</option>
+                <option value="10">10s</option>
+                <option value="20">20s</option>
+                <option value="30">30s</option>
+                <option value="40">40s</option>
+                <option value="50">50s</option>
+                <option value="60+">60s+</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Gender</label>
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">Select</option>
+                <option value="m">Male</option>
+                <option value="f">Female</option>
+                <option value="o">Other</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Login Email - read only */}
