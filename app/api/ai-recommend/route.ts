@@ -31,12 +31,19 @@ export async function POST(req: NextRequest) {
   const { wishlistId, excludedItems } = await req.json();
   if (!wishlistId) return NextResponse.json({ error: "wishlistId required" }, { status: 400 });
 
-  const { data: wishlist } = await supabase
-    .from("wishlists")
-    .select("title, event_type, user_id")
-    .eq("id", wishlistId)
-    .eq("user_id", user.id)
-    .single();
+  const [{ data: wishlist }, { data: userProfile }] = await Promise.all([
+    supabase
+      .from("wishlists")
+      .select("title, event_type, user_id")
+      .eq("id", wishlistId)
+      .eq("user_id", user.id)
+      .single(),
+    supabase
+      .from("users")
+      .select("age_group, gender")
+      .eq("id", user.id)
+      .single(),
+  ]);
 
   if (!wishlist) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -52,6 +59,9 @@ export async function POST(req: NextRequest) {
     `You are a gift recommendation assistant for WishLink, targeting Canadian and North American users.`,
     ``,
     `Wishlist: "${wishlist.title}" (${eventLabel})`,
+    ...(userProfile?.age_group || userProfile?.gender
+      ? [`Wishlist owner: ${[userProfile.age_group, userProfile.gender].filter(Boolean).join(", ")}`]
+      : []),
     existingItems.length > 0
       ? `Already on the wishlist: ${existingItems.map((t) => `"${t}"`).join(", ")}`
       : `No items yet.`,

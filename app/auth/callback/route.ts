@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     if (!error && data.user) {
       const { data: existing } = await supabaseAdmin
         .from("users")
-        .select("id")
+        .select("id, nickname")
         .eq("id", data.user.id)
         .single();
 
@@ -25,6 +25,10 @@ export async function GET(request: Request) {
           avatar_url: data.user.user_metadata?.avatar_url ?? null,
           provider: data.user.app_metadata?.provider ?? "google",
         });
+        return NextResponse.redirect(`${origin}/setup/nickname`);
+      }
+
+      if (!existing.nickname) {
         return NextResponse.redirect(`${origin}/setup/nickname`);
       }
 

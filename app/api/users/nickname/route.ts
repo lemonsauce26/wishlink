@@ -9,14 +9,19 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { nickname } = await req.json();
+  const { nickname, ageGroup, gender } = await req.json();
   if (!nickname?.trim() || !NICKNAME_REGEX.test(nickname.trim())) {
     return NextResponse.json({ error: "Invalid nickname" }, { status: 400 });
   }
 
   const { error } = await supabaseAdmin
     .from("users")
-    .update({ nickname: nickname.trim(), updated_at: new Date().toISOString() })
+    .update({
+      nickname: nickname.trim(),
+      age_group: ageGroup || null,
+      gender: gender || null,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", user.id);
 
   if (error?.code === "23505") {

@@ -10,6 +10,8 @@ export type Database = {
           avatar_url: string | null;
           provider: string;
           role: string;
+          age_group: string | null;
+          gender: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -20,6 +22,8 @@ export type Database = {
           nickname?: string | null;
           avatar_url?: string | null;
           provider?: string;
+          age_group?: string | null;
+          gender?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -29,6 +33,8 @@ export type Database = {
           nickname?: string | null;
           avatar_url?: string | null;
           provider?: string;
+          age_group?: string | null;
+          gender?: string | null;
           updated_at?: string;
         };
         Relationships: [];

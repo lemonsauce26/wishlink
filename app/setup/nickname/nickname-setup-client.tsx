@@ -12,6 +12,8 @@ export function NicknameSetupClient() {
   const [checking, setChecking] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ageGroup, setAgeGroup] = useState("");
+  const [gender, setGender] = useState("");
 
   const isValidFormat = NICKNAME_REGEX.test(nickname.trim());
 
@@ -45,7 +47,7 @@ export function NicknameSetupClient() {
     const res = await fetch("/api/users/nickname", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nickname: nickname.trim() }),
+      body: JSON.stringify({ nickname: nickname.trim(), ageGroup, gender }),
     });
 
     if (res.status === 409) {
@@ -99,6 +101,44 @@ export function NicknameSetupClient() {
         {error && (
           <p className="text-xs text-destructive">{error}</p>
         )}
+      </div>
+
+      <div className="space-y-3 rounded-xl border border-border p-4 bg-secondary/40">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Optional</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Age group</label>
+            <select
+              value={ageGroup}
+              onChange={(e) => setAgeGroup(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Select</option>
+              <option value="10">10s</option>
+              <option value="20">20s</option>
+              <option value="30">30s</option>
+              <option value="40">40s</option>
+              <option value="50">50s</option>
+              <option value="60+">60s+</option>
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Gender</label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Select</option>
+              <option value="m">Male</option>
+              <option value="f">Female</option>
+              <option value="o">Other</option>
+            </select>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          These help us give you better AI gift recommendations. You can skip this.
+        </p>
       </div>
 
       <button
